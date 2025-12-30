@@ -1,10 +1,10 @@
 from ultralytics import YOLO
 
 # Load your trained model
-model = YOLO('runs/detect/money_detector/weights/best.pt')
+model = YOLO('/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/runs/detect/takingstock_yolov8n/weights/best.pt')
 
 # Test on new image
-results = model('/Users/michaelmandiberg/Documents/GitHub/facemap/yolo_dataset/images/val/7db1e25a-1963428697.jpg')
+results = model('/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/images/val/7db1e25a-1963428697.jpg')
 
 # Show results
 results[0].show()
