@@ -76,6 +76,22 @@ folders = [f.path for f in os.scandir(SORTED_IMAGES_FOLDER) if f.is_dir()]
 class_names = {}
 class_id = 0
 
+# build class_names dict first
+for folder in folders:
+    class_name = os.path.basename(folder)
+    if class_name[0].isdigit():
+        class_names[class_id] = class_name
+        class_id += 1
+
+# create reverse mapping
+class_name_to_YOLOid = {v: k for k, v in class_names.items()}
+class_id_to_YOLOid = {}
+for class_name, yolo_id in class_name_to_YOLOid.items():
+    class_id = class_name.split('_')[0]
+    # print(f"Class '{class_id}' -> YOLO ID: {yolo_id}")
+    class_id_to_YOLOid[class_id] = yolo_id
+print(f"\nClass ID to YOLO ID mapping: {class_id_to_YOLOid}")
+
 for folder in folders:
     class_name = os.path.basename(folder)
     this_folder = os.path.join(SORTED_IMAGES_FOLDER,folder)
@@ -91,17 +107,17 @@ for folder in folders:
     if len(files) == 0:
         print(f"No images found in {this_folder_images}, skipping.")
         continue
-    if class_name[0].isdigit():
-        # Store class information
-        class_names[class_id] = class_name
-        class_id += 1
-    else:
-        print(f"need to move '{class_name}' directly as it won't be added to class_id_to_YOLOid.")
+    if not class_name[0].isdigit():
+    #     # Store class information
+    #     class_names[class_id] = class_name
+    #     class_id += 1
+    # else:
+    #     print(f"need to move '{class_name}' directly as it won't be added to class_id_to_YOLOid.")
         split_dataset(
             source_images= this_folder_images,
             source_labels=os.path.join(this_folder, 'labels'),
             output_dir=YOLO_READY_DATASET_FOLDER,
-            class_id_to_YOLOid=None,
+            class_id_to_YOLOid=class_id_to_YOLOid,
             train_ratio=0.8
         )
 
@@ -122,13 +138,6 @@ print(f"\nCreated YOLO config file: {yaml_path}")
 print(f"Total classes: {len(class_names)}")
 print(f"Classes: {class_names}")
 
-class_name_to_YOLOid = {v: k for k, v in class_names.items()}
-class_id_to_YOLOid = {}
-for class_name, yolo_id in class_name_to_YOLOid.items():
-    class_id = class_name.split('_')[0]
-    # print(f"Class '{class_id}' -> YOLO ID: {yolo_id}")
-    class_id_to_YOLOid[class_id] = yolo_id
-print(f"\nClass ID to YOLO ID mapping: {class_id_to_YOLOid}")
 
 for class_name, yolo_id in class_name_to_YOLOid.items():
     this_folder = os.path.join(SORTED_IMAGES_FOLDER,class_name)
