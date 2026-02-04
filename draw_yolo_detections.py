@@ -4,22 +4,49 @@ import json
 from pathlib import Path
 
 # ---- paths ----
-DATASET_ROOT = "/Users/michaelmandiberg/Documents/yolo/Project2Fix"
+DATASET_ROOT = "/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset"
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
 CLASSES_FILE = os.path.join(DATASET_ROOT, "classes.txt")
 OUTPUT_DIR = os.path.join(DATASET_ROOT, "images_detections")
+classes_dict = {}
+SAVE_TO_CLASS_FOLDERS = True  # Set to True to save images in class-named subfolders
 
 # Alternative: Single folder with both images and JSON labels
 SINGLE_FOLDER_MODE = False  # Set to True for single folder with JSON labels
 SINGLE_FOLDER_PATH = Path("/Users/michaelmandiberg/Documents/projects-active/facemap_production/labeling_round2/osama200")
 
+TRAIN_VAL_MODE = True  # Set to True if dataset has train/val subfolders
+if TRAIN_VAL_MODE and not SINGLE_FOLDER_MODE:
+    IMAGES_DIR = os.path.join(DATASET_ROOT, "images", "train")
+    LABELS_DIR = os.path.join(DATASET_ROOT, "labels", "train")
+    CLASSES_FILE = os.path.join(DATASET_ROOT, "data.yaml")
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ---- load class names ----
-if not SINGLE_FOLDER_MODE:
+if not SINGLE_FOLDER_MODE and not TRAIN_VAL_MODE:
     with open(CLASSES_FILE, "r") as f:
         classes = [line.strip() for line in f if line.strip()]
+elif TRAIN_VAL_MODE:
+    # this creates a list with placeholders for none existing class IDs
+    # this maps list index to class_id to class_name
+    classes_raw = []  # Will be loaded from data.yaml in this mode
+    classes = []
+    # load class names from data.yaml
+    import yaml
+    with open(CLASSES_FILE, 'r') as f:
+        data = yaml.safe_load(f)
+        classes_raw = data.get('names', [])
+    print(f"Raw classes from data.yaml: {classes_raw}")
+    for train_id, class_id_name in enumerate(classes_raw):
+        print(f"train_id {train_id} class_id_name: {class_id_name}", type(class_id_name), classes_raw[class_id_name])
+        class_id, class_name = classes_raw[class_id_name].split('_')
+        classes_dict[train_id] = class_name
+        classes.append(class_name)
+    print(f"Loaded classes from data.yaml: {classes_raw} and mapping: {classes_dict}")
+    max_class_id = max(int(cid) for cid in classes_dict.keys())
+    print(f"Max class ID: {max_class_id}")
 else:
     classes = []  # For JSON format, labels are in the JSON itself
 
@@ -75,6 +102,7 @@ def process_yolo_format():
         with open(label_file, "r") as f:
             lines = f.readlines()
             print(f"Label file contains {len(lines)} lines")
+            label_set = set()
 
             for i, line in enumerate(lines):
                 parts = line.strip().split()
@@ -107,11 +135,20 @@ def process_yolo_format():
                     1,
                     cv2.LINE_AA,
                 )
+                label_set.add(label)
                 print(f"Drew box for class '{label}' at ({x1},{y1},{x2},{y2})")
-
-        out_path = os.path.join(OUTPUT_DIR, img_name)
-        cv2.imwrite(out_path, image)
-        print(f"Saved annotated image to {out_path}")
+        # Save output image
+        if SAVE_TO_CLASS_FOLDERS and label_set:
+            class_string = "_".join(sorted(label_set))
+            class_folder = os.path.join(OUTPUT_DIR, class_string)
+            os.makedirs(class_folder, exist_ok=True)
+            out_path = os.path.join(class_folder, img_name)
+            cv2.imwrite(out_path, image)
+            print(f"Saved annotated image to {out_path}")
+        else:
+            out_path = os.path.join(OUTPUT_DIR, img_name)
+            cv2.imwrite(out_path, image)
+            print(f"Saved annotated image to {out_path}")
 
 
 def process_json_format():

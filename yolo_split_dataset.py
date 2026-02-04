@@ -16,14 +16,16 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         for line in lines:
             parts = line.strip().split()
             if len(parts) > 0:
-                old_class_id = parts[0]
-                # Convert to YOLO ID
-                yolo_id = class_id_to_YOLOid.get(old_class_id, old_class_id)
-                parts[0] = str(yolo_id)
-                parts[3] = parts[3].replace('1.0','0.99')  # width
-                parts[4] = parts[4].replace('1.0','0.99')  # height
-                converted_lines.append(' '.join(parts) + '\n')
-        
+                try:
+                    old_class_id = parts[0]
+                    # Convert to YOLO ID
+                    yolo_id = class_id_to_YOLOid.get(old_class_id, old_class_id)
+                    parts[0] = str(yolo_id)
+                    parts[3] = '0.99' if float(parts[3]) >= 1 else parts[3]  # width
+                    parts[4] = '0.99' if float(parts[4]) >= 1 else parts[4]  # height
+                    converted_lines.append(' '.join(parts) + '\n')
+                except Exception as e:
+                    print(f"Error converting line '{line.strip()}' in {input_path}: {e}")
         with open(output_path, 'w') as f:
             f.writelines(converted_lines)
     

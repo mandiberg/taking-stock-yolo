@@ -1,28 +1,8 @@
-# data.yaml
-path: /Users/michaelmandiberg/Documents/GitHub/facemap/yolo_dataset  # USE ABSOLUTE PATH
+path: /Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset
 train: images/train
 val: images/val
-
-# Classes (adjust to match your labels)
-# money_bill
-# money_fan
-# money_coin
-# piggybank
-# creditcard
-# bitcoin
-
-# names:
-#   0: money_bill
-#   1: money_fan
-#   2: money_coin
-#   3: piggybank
-#   4: creditcard
-#   5: bitcoin
+nc: 3
 names:
-  0: money_bill
-  1: money_fan
-  2: bitcoin
-  3: piggybank
-  4: creditcard
-
-nc: 5
+  0: 90_stethoscope
+  1: 92_headphones
+  2: 84_valentine

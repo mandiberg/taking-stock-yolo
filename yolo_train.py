@@ -3,6 +3,7 @@ import os
 
 # Load pretrained model
 model = YOLO('yolov8m.pt')  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt
+# model_f = YOLO('yolov8m.pt')  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt
 # DATA_FOLDER = "/Users/michael.mandiberg/Documents/takingstock_production/labeled_images_nov19"
     
 # Source - https://stackoverflow.com/a
@@ -30,14 +31,31 @@ results = model.train(
     epochs=100,
     imgsz=640,
     batch=16,       # Reduce if you get memory errors
-    name='takingstock_yolov8m',  # Experiment name
+    name='takingstock_steth_head_heart_yolov8m',  # Experiment name
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
-    workers=60,     # Increase for better data loading with M3 Ultra
+    workers=8,        # ✅ CPU workers, not GPU cores
     project='/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
     exist_ok=True,  # Overwrite existing experiment with same name
-    augment=True
+    augment=True,
+    cache='ram'   # ⭐ Enable RAM caching
 )
+
+# Train
+# results_f = model_f.train(
+#     data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset_allhearts/data.yaml",  # absolute path
+#     epochs=100,
+#     imgsz=640,
+#     batch=16,       # Reduce if you get memory errors
+#     name='takingstock_84_valentine_withblems_yolov8m',  # Experiment name
+#     patience=20,    # Early stopping
+#     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
+#     workers=8,        # ✅ CPU workers, not GPU cores
+#     project='/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
+#     exist_ok=True,  # Overwrite existing experiment with same name
+#     augment=True,
+#     cache='ram'   # ⭐ Enable RAM caching
+# )
 
 # Source - https://stackoverflow.com/a
 # Posted by the_artemi8

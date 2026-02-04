@@ -1,10 +1,10 @@
 from ultralytics import YOLO
 
 # Load your trained model
-model = YOLO('/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/runs/detect/takingstock_yolov8n/weights/best.pt')
+model = YOLO('/Users/michael.mandiberg/Documents/GitHub/takingstock/models/takingstock_84_valentine_withblems_yolov8m/weights/best.pt')
 
 # Test on new image
-results = model('/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/images/val/7db1e25a-1963428697.jpg')
+results = model('/Volumes/LaCie/segment_images_84_valentine/test_output_noblems/84/unique/0.98_35214354_YOLO_debug.jpg')
 
 # Show results
 results[0].show()
