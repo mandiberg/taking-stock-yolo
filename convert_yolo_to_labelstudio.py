@@ -4,15 +4,41 @@ import uuid
 import cv2
 
 # 📌 CONFIG — adjust these
-YOLO_ROOT = "/Volumes/Michael Mandiberg’s Public Folder/steth_chestpiece"
-IMAGES_DIR = os.path.join(YOLO_ROOT, "images")
-LABELS_DIR = os.path.join(YOLO_ROOT, "labels")
-OUTPUT_JSON = os.path.join(YOLO_ROOT, "labelstudio_tasks.json")
+YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/"
+DATASET_FOLDER = "steth_chestpiece"
+IMAGES_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "images")
+LABELS_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labels")
+OUTPUT_JSON = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labelstudio_tasks.json")
 
 # 📌 You must manually list your classes here
-CLASSES = [
-    "class0", "class1", "class2",  # replace with your actual class names
-]
+CLASSES = {
+    80: "Sign",
+    81: "Gift",
+    82: "Money",
+    83: "Bag",
+    84: "Valentine",
+    85: "Salad",
+    86: "Dumbbell",
+    87: "Flag",
+    88: "Groceries",
+    89: "Mask",
+    90: "Stethoscope",
+    91: "Gun",
+    92: "Headphones",
+    93: "Clipboard",
+    94: "Piggybank",
+    95: "Creditcard",
+    96: "Bitcoin",
+    97: "Rose",
+    98: "Lily",
+    99: "Iris",
+    100: "Tulip",
+    101: "Lisianthus",
+    102: "Orchid",
+    103: "Peony",
+
+}
+
 
 tasks = []
 
@@ -58,8 +84,9 @@ for img_name in sorted(os.listdir(IMAGES_DIR)):
             width  = bw * 100
             height = bh * 100
 
-            label_name = CLASSES[class_id] if class_id < len(CLASSES) else f"class{class_id}"
-
+            print(f"Converting box for class ID {class_id} in {img_name} with {min(CLASSES.keys())} classes.")
+            label_name = CLASSES[class_id] if class_id >= min(CLASSES.keys()) else f"class{class_id}"
+            print(f" - Found box: {label_name} at ({left:.2f}%, {top:.2f}%, {width:.2f}%, {height:.2f}%)")
             # unique ID for this box
             uid = str(uuid.uuid4())
 
@@ -73,9 +100,10 @@ for img_name in sorted(os.listdir(IMAGES_DIR)):
                     "width": width,
                     "height": height,
                     "rectanglelabels": [label_name]
-                },
-                "id": uid,
-                "score": 1.0
+                }
+                # ,
+                # "id": uid,
+                # "score": 1.0
             }
             results.append(result)
 
