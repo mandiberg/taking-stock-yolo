@@ -1,5 +1,8 @@
 import os
 
+# Chestpiece
+# Stethoscope
+
 
 name_to_id = {
     'Sign': 80,
@@ -11,7 +14,7 @@ name_to_id = {
     'Dumbbell': 86,
     'Flag': 87,
     'Groceries': 88,
-    'Mask': 89,
+    'Chestpiece': 89,
     'Stethoscope': 90,
     'Gun': 91,
     'Headphones': 92,
@@ -25,10 +28,11 @@ name_to_id = {
     'Tulip': 100,
     'Lisianthus': 101,
     'Orchid': 102,
-    'Peony': 103
+    'Peony': 103,
+    'Mask': 104,
 }
 
-FOLDER = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/90_stethoscope"
+FOLDER = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/label_final steth"
 CLASSES_FILE = os.path.join(FOLDER, 'classes.txt')
 LABELS_FOLDER = os.path.join(FOLDER, 'labels')
 

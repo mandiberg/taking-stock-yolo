@@ -115,7 +115,7 @@ for img_name in sorted(os.listdir(IMAGES_DIR)):
         "data": {
             "image": img_name  # refer to image by its filename
         },
-        "predictions": [
+        "detections": [
             {
                 "result": results
             }

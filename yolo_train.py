@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import os
 
 # Load pretrained model
-model = YOLO('yolov8m.pt')  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt
+model = YOLO('yolov8x.pt')  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt, yolov8x.pt
 # model_f = YOLO('yolov8m.pt')  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt
 # DATA_FOLDER = "/Users/michael.mandiberg/Documents/takingstock_production/labeled_images_nov19"
     
@@ -30,8 +30,8 @@ results = model.train(
     data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml",  # absolute path
     epochs=100,
     imgsz=640,
-    batch=16,       # Reduce if you get memory errors
-    name='takingstock_steth_head_heart_yolov8m',  # Experiment name
+    batch=-1,       # Reduce if you get memory errors
+    name='takingstock_chestpiece_onlyfeb5stethoscope_v5_yolov8x',  # Experiment name
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
     workers=8,        # ✅ CPU workers, not GPU cores
@@ -41,13 +41,12 @@ results = model.train(
     cache='ram'   # ⭐ Enable RAM caching
 )
 
-# Train
 # results_f = model_f.train(
-#     data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset_allhearts/data.yaml",  # absolute path
+#     data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset_trim/data.yaml",  # absolute path
 #     epochs=100,
 #     imgsz=640,
 #     batch=16,       # Reduce if you get memory errors
-#     name='takingstock_84_valentine_withblems_yolov8m',  # Experiment name
+#     name='takingstock_chestpiece_auto95plus_yolov8m',  # Experiment name
 #     patience=20,    # Early stopping
 #     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
 #     workers=8,        # ✅ CPU workers, not GPU cores
