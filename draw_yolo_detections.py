@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 # ---- paths ----
-DATASET_ROOT = "/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset"
+DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images/1_pistol"
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
 CLASSES_FILE = os.path.join(DATASET_ROOT, "classes.txt")
@@ -16,7 +16,7 @@ SAVE_TO_CLASS_FOLDERS = True  # Set to True to save images in class-named subfol
 SINGLE_FOLDER_MODE = False  # Set to True for single folder with JSON labels
 SINGLE_FOLDER_PATH = Path("/Users/michaelmandiberg/Documents/projects-active/facemap_production/labeling_round2/osama200")
 
-TRAIN_VAL_MODE = True  # Set to True if dataset has train/val subfolders
+TRAIN_VAL_MODE = False  # Set to True if dataset has train/val subfolders
 if TRAIN_VAL_MODE and not SINGLE_FOLDER_MODE:
     IMAGES_DIR = os.path.join(DATASET_ROOT, "images", "train")
     LABELS_DIR = os.path.join(DATASET_ROOT, "labels", "train")

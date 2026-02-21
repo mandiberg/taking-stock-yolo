@@ -1,6 +1,7 @@
 import os
 
-ROOT = os.path.join("/Volumes/OWC5/segment_images_90_stethoscope", "test_output/sort")
+# ROOT = os.path.join("/Volumes/OWC5/segment_images_91_gun", "test_output/sort")
+ROOT = os.path.join("/Users/michaelmandiberg/Documents/yolo", "gun_sort_forV3/sort")
 # SPLITS = ["train", "val"]
 move_list_folder = os.path.join(ROOT, "move_these")
 relabel_list_folder = os.path.join(ROOT, "relabel_these")
@@ -10,6 +11,38 @@ decoy_list_folder =  os.path.join(ROOT, "decoys")
 def ensure_dir(path: str):
 	os.makedirs(path, exist_ok=True)
 
+
+def extract_uid(filename: str):
+	root, _ = os.path.splitext(filename)
+	parts = root.split("_")
+	if len(parts) < 2:
+		return None
+	return parts[1]
+
+
+def index_files_by_uid(base_dir: str):
+	image_exts = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
+	images_by_uid = {}
+	labels_by_uid = {}
+	for name in os.listdir(base_dir):
+		path = os.path.join(base_dir, name)
+		if not os.path.isfile(path):
+			continue
+		uid = extract_uid(name)
+		if uid is None:
+			continue
+		root, ext = os.path.splitext(name)
+		if ext in image_exts:
+			if uid in images_by_uid:
+				print(f"[WARN] Duplicate image UID '{uid}' in {base_dir}; keeping first: {os.path.basename(images_by_uid[uid])}")
+				continue
+			images_by_uid[uid] = path
+		elif ext.lower() == ".txt":
+			if uid in labels_by_uid:
+				print(f"[WARN] Duplicate label UID '{uid}' in {base_dir}; keeping first: {os.path.basename(labels_by_uid[uid])}")
+				continue
+			labels_by_uid[uid] = path
+	return images_by_uid, labels_by_uid
 
 def find_existing_image(base_dir: str, stem: str):
 	# Try common image extensions
@@ -26,31 +59,47 @@ def move_files(files_to_move_folder: str, move_list_folder: str, save_labels: bo
 		labels_out = os.path.join(move_list_folder, "labels")
 		ensure_dir(labels_out)
 
-	# Build set of basenames (without extension) from files present in move_list_folder
-	move_names = [f for f in os.listdir(move_list_folder) if os.path.isfile(os.path.join(move_list_folder, f))]
-	if bool(not move_names):
+	images_by_uid, labels_by_uid = index_files_by_uid(files_to_move_folder)
+
+	# Build set of UIDs from files present in move_list_folder (or move_list_folder/images)
+	image_exts = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
+	move_search_dirs = [move_list_folder]
+	images_subdir = os.path.join(move_list_folder, "images")
+	if os.path.isdir(images_subdir):
+		move_search_dirs.append(images_subdir)
+
+	uids = set()
+	seen_files = 0
+	for search_dir in move_search_dirs:
+		for name in os.listdir(search_dir):
+			path = os.path.join(search_dir, name)
+			if not os.path.isfile(path):
+				continue
+			seen_files += 1
+			root, ext = os.path.splitext(name)
+			if ext in image_exts or ext == "":
+				uid = extract_uid(name)
+				if uid is not None:
+					uids.add(uid)
+
+	if seen_files == 0:
 		print(f"No files found in move list folder: {move_list_folder}. Nothing to do.")
 		return 0, 0, 0, 0
-	stems = set()
-	for name in move_names:
-		root, ext = os.path.splitext(name)
-		if ext.lower() in (".jpg", ".jpeg", ".png"):
-			stems.add(root)
 
-	if not stems:
+	if not uids:
 		print("No image names found in move list folder. Nothing to do.")
-		return
+		return 0, 0, 0, 0
 
 	moved_images = 0
 	moved_labels = 0
 	missing_images = 0
 	missing_labels = 0
 
-	for stem in sorted(stems):
-		# Locate source image in files_to_move_folder
-		src_img = find_existing_image(files_to_move_folder, stem)
+	for uid in sorted(uids):
+		# Locate source image in files_to_move_folder by UID
+		src_img = images_by_uid.get(uid)
 		if src_img is None:
-			print(f"[WARN] Image not found for '{stem}' in {files_to_move_folder}")
+			print(f"[WARN] Image not found for UID '{uid}' in {files_to_move_folder}")
 			missing_images += 1
 		else:
 			dst_img = os.path.join(images_out, os.path.basename(src_img))
@@ -60,10 +109,10 @@ def move_files(files_to_move_folder: str, move_list_folder: str, save_labels: bo
 				os.rename(src_img, dst_img)
 				moved_images += 1
 		if save_labels:
-			# Locate source label (.txt)
-			src_lbl = os.path.join(files_to_move_folder, stem + ".txt")
-			if not os.path.isfile(src_lbl):
-				print(f"[WARN] Label not found for '{stem}' in {files_to_move_folder}")
+			# Locate source label (.txt) by UID
+			src_lbl = labels_by_uid.get(uid)
+			if src_lbl is None:
+				print(f"[WARN] Label not found for UID '{uid}' in {files_to_move_folder}")
 				missing_labels += 1
 			else:
 				dst_lbl = os.path.join(labels_out, os.path.basename(src_lbl))

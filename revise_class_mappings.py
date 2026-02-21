@@ -1,29 +1,91 @@
 #!/usr/bin/env python3
-"""Remap YOLO labels for the HF flowers dataset.
+"""Remap YOLO labels to COCO class IDs.
 
-- Drops labels with class id > max_class (default 1).
-- Maps class 1 -> 0 (combining "flower arrangement" with "flower").
-- Leaves class 0 unchanged.
-
-Use after dataset download/conversion to prune irrelevant classes.
+Maps local class IDs to COCO dataset class IDs based on class names.
 """
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-default_path = "./hf_yolo_dataset"
-max_class = 1
+default_path = "/Users/michaelmandiberg/Documents/projects-active/facemap_production/miami_image_labelling/none_flowers1k_Poppy_labeled"
+# default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
+# Mapping from local class ID to class name
+# LOCAL_CLASS_NAMES = {
+#     0: "Bag",
+#     1: "Bitcoin",
+#     2: "Creditcard",
+#     3: "Dumbbell",
+#     4: "Gift",
+#     5: "Groceries",
+#     6: "Iris",
+#     7: "Lily",
+#     8: "Lisianthus",
+#     9: "Money",
+#     10: "Orchid",
+#     11: "Peony",
+#     12: "Piggybank",
+#     13: "Rose",
+#     14: "Sign",
+#     15: "Tulip",
+# }
 
-def remap_labels(base_dir: Path, max_class: int = 1) -> None:
+
+
+LOCAL_CLASS_NAMES = {
+    0: "Daffodil",
+    1: "Daisy",
+    2: "Hydrangea",
+    3: "Lily",
+    4: "Lisianthus",
+    5: "Orchid",
+    6: "Peony",
+    7: "Rose",
+    8: "Sunflower",
+    9: "Tulip"
+}
+
+
+# Mapping from class name to COCO class ID
+COCO_CLASS_IDS = {
+    "Sign": 80,
+    "Gift": 81,
+    "Money": 82,
+    "Bag": 83,
+    "Dumbbell": 86,
+    "Groceries": 88,
+    "Piggybank": 94,
+    "Creditcard": 95,
+    "Bitcoin": 96,
+    "Rose": 97,
+    "Lily": 98,
+    "Iris": 99,
+    "Tulip": 100,
+    "Lisianthus": 101,
+    "Orchid": 102,
+    "Peony": 103,
+    "Sunflower": 104,
+    "Daisy": 105,
+    "Daffodil": 106,
+    "Hydrangea": 107,
+}
+
+# Build mapping from local class ID to COCO class ID
+LOCAL_TO_COCO = {
+    local_id: COCO_CLASS_IDS[LOCAL_CLASS_NAMES[local_id]]
+    for local_id in LOCAL_CLASS_NAMES
+    if LOCAL_CLASS_NAMES[local_id] in COCO_CLASS_IDS
+}
+
+def remap_labels(base_dir: Path) -> None:
     labels_dir = base_dir / "labels"
     if not labels_dir.exists():
         raise FileNotFoundError(f"Labels directory not found: {labels_dir}")
 
     total_files = 0
     changed_files = 0
-    dropped_boxes = 0
-    kept_boxes = 0
+    remapped_boxes = 0
+    unmapped_boxes = 0
 
     for txt_path in labels_dir.rglob("*.txt"):
         total_files += 1
@@ -40,14 +102,13 @@ def remap_labels(base_dir: Path, max_class: int = 1) -> None:
             except ValueError:
                 continue
 
-            if cls > max_class:
-                dropped_boxes += 1
+            if cls not in LOCAL_TO_COCO:
+                unmapped_boxes += 1
                 continue
 
-            if cls == 1:
-                parts[0] = "0"  # map class 1 -> 0
-            # cls == 0 stays 0
-            kept_boxes += 1
+            # Remap to COCO class ID
+            parts[0] = str(LOCAL_TO_COCO[cls])
+            remapped_boxes += 1
             new_lines.append(" ".join(parts))
 
         if new_lines != lines:
@@ -57,27 +118,21 @@ def remap_labels(base_dir: Path, max_class: int = 1) -> None:
     print(f"Processed label files in: {labels_dir}")
     print(f"Files scanned: {total_files}")
     print(f"Files changed: {changed_files}")
-    print(f"Boxes kept:   {kept_boxes}")
-    print(f"Boxes dropped: {dropped_boxes}")
+    print(f"Boxes remapped: {remapped_boxes}")
+    print(f"Boxes unmapped: {unmapped_boxes}")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Remap YOLO class ids for flowers dataset")
+    parser = argparse.ArgumentParser(description="Remap YOLO class IDs to COCO class IDs")
     parser.add_argument(
         "--base-dir",
         type=Path,
         default=Path(default_path),
         help="Base dataset directory containing images/ and labels/",
     )
-    parser.add_argument(
-        "--max-class",
-        type=int,
-        default=1,
-        help="Keep classes <= max_class; drop the rest",
-    )
 
     args = parser.parse_args()
-    remap_labels(args.base_dir, max_class=args.max_class)
+    remap_labels(args.base_dir)
 
 
 if __name__ == "__main__":

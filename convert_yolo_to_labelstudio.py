@@ -4,8 +4,8 @@ import uuid
 import cv2
 
 # 📌 CONFIG — adjust these
-YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/"
-DATASET_FOLDER = "steth_chestpiece"
+YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/gun_sort_forV3"
+DATASET_FOLDER = "sort/move_these"
 IMAGES_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "images")
 LABELS_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labels")
 OUTPUT_JSON = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labelstudio_tasks.json")
@@ -21,7 +21,7 @@ CLASSES = {
     86: "Dumbbell",
     87: "Flag",
     88: "Groceries",
-    89: "Mask",
+    89: "Chestpiece",
     90: "Stethoscope",
     91: "Gun",
     92: "Headphones",
@@ -36,6 +36,13 @@ CLASSES = {
     101: "Lisianthus",
     102: "Orchid",
     103: "Peony",
+    104: "Sunflower",
+    105: "Daisy",
+    106: "Daffodil",
+    107: "Hydrangea",
+    108: "Pistol",
+    109: "Rifle",
+    110: "Mask"
 
 }
 
@@ -49,13 +56,13 @@ for img_name in sorted(os.listdir(IMAGES_DIR)):
         continue
 
     image_path = os.path.join(IMAGES_DIR, img_name)
-
+    # print(f"\n📷 Loading image: {img_name}")
     # load image to get dimensions
     img = cv2.imread(image_path)
     if img is None:
         print(f"⚠️ Could not read image {img_name}, skipping.")
         continue
-
+    # print(f"Processing {img_name} with OpenCV shape {img.shape}")
     h, w = img.shape[:2]
 
     # find YOLO label
@@ -111,11 +118,13 @@ for img_name in sorted(os.listdir(IMAGES_DIR)):
         print(f"No boxes for {img_name}, skipping.")
         continue
 
+    image_folder = "/data/local-files/?d=images/"
+    img_data_path = os.path.join(image_folder, img_name)  # Label Studio expects a relative path to the image
     task = {
         "data": {
-            "image": img_name  # refer to image by its filename
+            "image": img_data_path  # refer to image by its relative path
         },
-        "predictions": [
+        "annotations": [
             {
                 "result": results
             }
