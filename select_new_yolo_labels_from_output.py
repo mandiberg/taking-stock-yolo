@@ -1,7 +1,8 @@
 import os
 
-# ROOT = os.path.join("/Volumes/OWC5/segment_images_91_gun", "test_output/sort")
-ROOT = os.path.join("/Users/michaelmandiberg/Documents/yolo", "gun_sort_forV3/sort")
+ROOT = os.path.join("/Volumes/OWC5/segment_images_92_headphones", "test_output/sort")
+# ROOT = os.path.join("/Users/michael.mandiberg/Documents/YOLO_Training_Data/sorted_images_tempexcluded/misc_val_headphones_manual", "test_output/sort")
+# ROOT = os.path.join("/Users/michaelmandiberg/Documents/yolo", "gun_sort_forV3/sort")
 # SPLITS = ["train", "val"]
 move_list_folder = os.path.join(ROOT, "move_these")
 relabel_list_folder = os.path.join(ROOT, "relabel_these")
@@ -14,10 +15,19 @@ def ensure_dir(path: str):
 
 def extract_uid(filename: str):
 	root, _ = os.path.splitext(filename)
-	parts = root.split("_")
-	if len(parts) < 2:
-		return None
-	return parts[1]
+	if "_YOLO_debug" in root:
+		parts = root.split("_YOLO_debug")
+		sub_parts = parts[0].split("_")
+		UID = sub_parts[-1]
+		return UID
+	elif "_" not in root:
+		parts = root.split(".")
+		return parts[0]
+	else:
+		parts = root.split("_")
+		if len(parts) < 2:
+			return None
+		return parts[1]
 
 
 def index_files_by_uid(base_dir: str):

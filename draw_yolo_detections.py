@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 
 # ---- paths ----
-DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images/1_pistol"
+# DATASET_ROOT = "/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset"
+DATASET_ROOT = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/sorted_images_tempexcluded/84_valentine"
+
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
 CLASSES_FILE = os.path.join(DATASET_ROOT, "classes.txt")
@@ -26,8 +28,12 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ---- load class names ----
 if not SINGLE_FOLDER_MODE and not TRAIN_VAL_MODE:
-    with open(CLASSES_FILE, "r") as f:
-        classes = [line.strip() for line in f if line.strip()]
+    if os.path.exists(CLASSES_FILE):
+        with open(CLASSES_FILE, "r") as f:
+            classes = [line.strip() for line in f if line.strip()]
+    else:
+        print(f"Warning: {CLASSES_FILE} not found. Will use class IDs as labels.")
+        classes = []
 elif TRAIN_VAL_MODE:
     # this creates a list with placeholders for none existing class IDs
     # this maps list index to class_id to class_name

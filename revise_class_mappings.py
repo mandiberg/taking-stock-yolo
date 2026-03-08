@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-default_path = "/Users/michaelmandiberg/Documents/projects-active/facemap_production/miami_image_labelling/none_flowers1k_Poppy_labeled"
+default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/sorted_images_guns/misc_guns_v10"
 # default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
 # LOCAL_CLASS_NAMES = {
@@ -32,18 +32,25 @@ default_path = "/Users/michaelmandiberg/Documents/projects-active/facemap_produc
 
 
 
+# LOCAL_CLASS_NAMES = {
+#     0: "Daffodil",
+#     1: "Daisy",
+#     2: "Hydrangea",
+#     3: "Iris",
+#     4: "Lily",
+#     5: "Lisianthus",
+#     6: "Orchid",
+#     7: "Peony",
+#     8: "Rose",
+#     9: "Sunflower",
+#     10: "Tulip"
+# }
+
 LOCAL_CLASS_NAMES = {
-    0: "Daffodil",
-    1: "Daisy",
-    2: "Hydrangea",
-    3: "Lily",
-    4: "Lisianthus",
-    5: "Orchid",
-    6: "Peony",
-    7: "Rose",
-    8: "Sunflower",
-    9: "Tulip"
+    0: "Pistol",
+    1: "Rifle",
 }
+
 
 
 # Mapping from class name to COCO class ID
@@ -68,6 +75,8 @@ COCO_CLASS_IDS = {
     "Daisy": 105,
     "Daffodil": 106,
     "Hydrangea": 107,
+    "Pistol": 108,
+    "Rifle": 109,
 }
 
 # Build mapping from local class ID to COCO class ID
