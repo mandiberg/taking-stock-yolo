@@ -7,7 +7,7 @@ import cv2
 YOLO_ROOT = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/"
 # YOLO_ROOT = "/Volumes/LaCie/segment_images_101_flowers_all/flower_image_repository/test_output"
 # DATASET_FOLDER = "sort/relabel_these"
-DATASET_FOLDER = "relabel_studio_valentines"
+DATASET_FOLDER = "116/relabel_these"
 IMAGES_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "images")
 LABELS_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labels")
 OUTPUT_JSON = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labelstudio_tasks.json")
@@ -45,7 +45,17 @@ CLASSES = {
     107: "Hydrangea",
     108: "Pistol",
     109: "Rifle",
-    110: "Mask"
+    110: "Mask",
+    111: "Facial",
+    112: "Sheetmask",
+    113: "Eyepatch",
+    114: "Sleepmask",
+    115: "Masquerade_mask",
+    116: "Cucumber",
+    117: "Kiwi",
+    118: "Lemon_slice",
+    119: "Avocado_half",
+    1134: "Sleepmask",
 
 }
 

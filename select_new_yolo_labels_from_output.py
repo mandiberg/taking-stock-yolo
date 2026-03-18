@@ -1,7 +1,8 @@
 import os
 
 ROOT = os.path.join("/Volumes/OWC5/segment_images_92_headphones", "test_output/sort")
-# ROOT = os.path.join("/Users/michael.mandiberg/Documents/YOLO_Training_Data/sorted_images_tempexcluded/misc_val_headphones_manual", "test_output/sort")
+# ROOT = os.path.join("/Volumes/LaCie/segment_images_84_valentine", "test_output/sort")
+# ROOT = os.path.join("/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/smoking_and_drinking", "test_output/sort")
 # ROOT = os.path.join("/Users/michaelmandiberg/Documents/yolo", "gun_sort_forV3/sort")
 # SPLITS = ["train", "val"]
 move_list_folder = os.path.join(ROOT, "move_these")

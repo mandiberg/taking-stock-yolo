@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/sorted_images_guns/misc_guns_v10"
+default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/facial_mar17"
 # default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
 # LOCAL_CLASS_NAMES = {
@@ -47,9 +47,17 @@ default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/sorted_ima
 # }
 
 LOCAL_CLASS_NAMES = {
-    0: "Pistol",
-    1: "Rifle",
-}
+    0: "Chestpiece",
+    1: "Eyepatch",
+    2: "Facial",
+    3: "Headphones",
+    4: "Mask",
+    5: "Masquerade_mask",
+    6: "Sheetmask",
+    7: "Sleepmask",
+    8: "Stethoscope",
+    9: "Valentine"
+}  
 
 
 
@@ -59,8 +67,16 @@ COCO_CLASS_IDS = {
     "Gift": 81,
     "Money": 82,
     "Bag": 83,
+    "Valentine": 84,
+    "Salad": 85, # not in use
     "Dumbbell": 86,
+    "Flag": 87,
     "Groceries": 88,
+    "Chestpiece": 89,
+    "Stethoscope": 90,
+    "Gun": 91,
+    "Headphones": 92,
+    "Clipboard": 93, # not in use
     "Piggybank": 94,
     "Creditcard": 95,
     "Bitcoin": 96,
@@ -77,6 +93,12 @@ COCO_CLASS_IDS = {
     "Hydrangea": 107,
     "Pistol": 108,
     "Rifle": 109,
+    "Mask": 110,
+    "Facial": 111,
+    "Sheetmask": 112,
+    "Eyepatch": 113,
+    "Sleepmask": 114,
+    "Masquerade_mask": 115,
 }
 
 # Build mapping from local class ID to COCO class ID

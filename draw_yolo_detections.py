@@ -5,7 +5,7 @@ from pathlib import Path
 
 # ---- paths ----
 # DATASET_ROOT = "/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset"
-DATASET_ROOT = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/sorted_images_tempexcluded/84_valentine"
+DATASET_ROOT = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/suspect_images_high_conf"
 
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
@@ -130,7 +130,7 @@ def process_yolo_format():
                 label = classes[class_id] if class_id < len(classes) else str(class_id)
 
                 # draw box
-                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
                 cv2.putText(
                     image,
                     label,

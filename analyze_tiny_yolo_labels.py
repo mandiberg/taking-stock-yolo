@@ -13,6 +13,15 @@ IGNORED_CLASS_PAIR = {89, 90}
 IGNORE_FOLDERS = {"reprocess", "depricated"}
 
 
+'''
+run analyze_tiny_yolo_labels.py
+then copy_suspect_files.py to move them to reprocess/suspect_images_high_conf
+will create two folders
+use draw_yolo_detections.py to visualize the labels on the images in the suspect_images_high_conf folder
+delete all GOOD ones. 
+then use inspect_delete_incorrect_label_detections.py to delete the suspect (small)
+'''
+
 @dataclass
 class FileStats:
     file_path: str
