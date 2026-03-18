@@ -211,3 +211,5 @@ __marimo__/
 *.txt
 *.cache
 *.jpeg
+*.pt
+/runs
