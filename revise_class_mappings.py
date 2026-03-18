@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-default_path = "/Users/michaelmandiberg/Documents/projects-active/facemap_production/miami_image_labelling/none_flowers1k_Poppy_labeled"
+default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/facial_mar17"
 # default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
 # LOCAL_CLASS_NAMES = {
@@ -32,18 +32,33 @@ default_path = "/Users/michaelmandiberg/Documents/projects-active/facemap_produc
 
 
 
+# LOCAL_CLASS_NAMES = {
+#     0: "Daffodil",
+#     1: "Daisy",
+#     2: "Hydrangea",
+#     3: "Iris",
+#     4: "Lily",
+#     5: "Lisianthus",
+#     6: "Orchid",
+#     7: "Peony",
+#     8: "Rose",
+#     9: "Sunflower",
+#     10: "Tulip"
+# }
+
 LOCAL_CLASS_NAMES = {
-    0: "Daffodil",
-    1: "Daisy",
-    2: "Hydrangea",
-    3: "Lily",
-    4: "Lisianthus",
-    5: "Orchid",
-    6: "Peony",
-    7: "Rose",
-    8: "Sunflower",
-    9: "Tulip"
-}
+    0: "Chestpiece",
+    1: "Eyepatch",
+    2: "Facial",
+    3: "Headphones",
+    4: "Mask",
+    5: "Masquerade_mask",
+    6: "Sheetmask",
+    7: "Sleepmask",
+    8: "Stethoscope",
+    9: "Valentine"
+}  
+
 
 
 # Mapping from class name to COCO class ID
@@ -52,8 +67,16 @@ COCO_CLASS_IDS = {
     "Gift": 81,
     "Money": 82,
     "Bag": 83,
+    "Valentine": 84,
+    "Salad": 85, # not in use
     "Dumbbell": 86,
+    "Flag": 87,
     "Groceries": 88,
+    "Chestpiece": 89,
+    "Stethoscope": 90,
+    "Gun": 91,
+    "Headphones": 92,
+    "Clipboard": 93, # not in use
     "Piggybank": 94,
     "Creditcard": 95,
     "Bitcoin": 96,
@@ -68,6 +91,14 @@ COCO_CLASS_IDS = {
     "Daisy": 105,
     "Daffodil": 106,
     "Hydrangea": 107,
+    "Pistol": 108,
+    "Rifle": 109,
+    "Mask": 110,
+    "Facial": 111,
+    "Sheetmask": 112,
+    "Eyepatch": 113,
+    "Sleepmask": 114,
+    "Masquerade_mask": 115,
 }
 
 # Build mapping from local class ID to COCO class ID

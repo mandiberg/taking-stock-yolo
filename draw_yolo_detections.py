@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 
 # ---- paths ----
-DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images/1_pistol"
+# DATASET_ROOT = "/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset"
+DATASET_ROOT = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/suspect_images_high_conf"
+
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
 CLASSES_FILE = os.path.join(DATASET_ROOT, "classes.txt")
@@ -26,8 +28,12 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ---- load class names ----
 if not SINGLE_FOLDER_MODE and not TRAIN_VAL_MODE:
-    with open(CLASSES_FILE, "r") as f:
-        classes = [line.strip() for line in f if line.strip()]
+    if os.path.exists(CLASSES_FILE):
+        with open(CLASSES_FILE, "r") as f:
+            classes = [line.strip() for line in f if line.strip()]
+    else:
+        print(f"Warning: {CLASSES_FILE} not found. Will use class IDs as labels.")
+        classes = []
 elif TRAIN_VAL_MODE:
     # this creates a list with placeholders for none existing class IDs
     # this maps list index to class_id to class_name
@@ -124,7 +130,7 @@ def process_yolo_format():
                 label = classes[class_id] if class_id < len(classes) else str(class_id)
 
                 # draw box
-                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
                 cv2.putText(
                     image,
                     label,

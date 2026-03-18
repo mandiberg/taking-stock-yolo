@@ -4,6 +4,9 @@ import random
 import os
 import yaml
 
+SKIP_LIST = []
+SKIP_SET = {str(class_id) for class_id in SKIP_LIST}
+
 def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=None, train_ratio=0.8):
     """Split dataset into train/val"""
     
@@ -18,8 +21,12 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
             if len(parts) > 0:
                 try:
                     old_class_id = parts[0]
+                    if old_class_id in SKIP_SET:
+                        continue
                     # Convert to YOLO ID
                     yolo_id = class_id_to_YOLOid.get(old_class_id, old_class_id)
+                    if str(yolo_id) in SKIP_SET:
+                        continue
                     parts[0] = str(yolo_id)
                     parts[3] = '0.99' if float(parts[3]) >= 1 else parts[3]  # width
                     parts[4] = '0.99' if float(parts[4]) >= 1 else parts[4]  # height
@@ -135,6 +142,12 @@ yaml_data = {
 yaml_path = os.path.join(YOLO_READY_DATASET_FOLDER, 'data.yaml')
 with open(yaml_path, 'w') as f:
     yaml.dump(yaml_data, f, default_flow_style=False, sort_keys=False)
+
+# write a YOLO classes.txt file for reference
+classes_txt_path = os.path.join(YOLO_READY_DATASET_FOLDER, 'classes.txt')
+with open(classes_txt_path, 'w') as f:
+    for class_id in sorted(class_names.keys()):
+        f.write(f"{class_names[class_id]}\n")
 
 print(f"\nCreated YOLO config file: {yaml_path}")
 print(f"Total classes: {len(class_names)}")
