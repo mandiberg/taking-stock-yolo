@@ -18,18 +18,35 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         converted_lines = []
         for line in lines:
             parts = line.strip().split()
-            if len(parts) > 0:
+            if len(parts) >= 5:
                 try:
                     old_class_id = parts[0]
                     if old_class_id in SKIP_SET:
                         continue
-                    # Convert to YOLO ID
                     yolo_id = class_id_to_YOLOid.get(old_class_id, old_class_id)
                     if str(yolo_id) in SKIP_SET:
                         continue
+
+                    x_center = float(parts[1])
+                    y_center = float(parts[2])
+                    width = float(parts[3])
+                    height = float(parts[4])
+
+                    left = max(0.0, min(1.0, x_center - width / 2))
+                    right = max(0.0, min(1.0, x_center + width / 2))
+                    top = max(0.0, min(1.0, y_center - height / 2))
+                    bottom = max(0.0, min(1.0, y_center + height / 2))
+
+                    clipped_width = right - left
+                    clipped_height = bottom - top
+                    if clipped_width <= 0 or clipped_height <= 0:
+                        continue
+
                     parts[0] = str(yolo_id)
-                    parts[3] = '0.99' if float(parts[3]) >= 1 else parts[3]  # width
-                    parts[4] = '0.99' if float(parts[4]) >= 1 else parts[4]  # height
+                    parts[1] = f"{(left + right) / 2:.6f}"
+                    parts[2] = f"{(top + bottom) / 2:.6f}"
+                    parts[3] = f"{clipped_width:.6f}"
+                    parts[4] = f"{clipped_height:.6f}"
                     converted_lines.append(' '.join(parts) + '\n')
                 except Exception as e:
                     print(f"Error converting line '{line.strip()}' in {input_path}: {e}")
