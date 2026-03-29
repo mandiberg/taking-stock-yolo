@@ -213,3 +213,5 @@ __marimo__/
 *.jpeg
 *.pt
 /runs
+/yolo_dataset
+zhiyuan_objv2_train.json

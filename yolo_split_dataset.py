@@ -2,29 +2,51 @@ import shutil
 from pathlib import Path
 import random
 import os
+from collections import Counter
 import yaml
 
 SKIP_LIST = []
-SKIP_SET = {str(class_id) for class_id in SKIP_LIST}
+SKIP_SET = {int(class_id) for class_id in SKIP_LIST}
 
-def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=None, train_ratio=0.8):
+
+def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=None, train_ratio=0.8, removed_class_counts=None):
     """Split dataset into train/val"""
+    if class_id_to_YOLOid is None:
+        class_id_to_YOLOid = {}
+    if removed_class_counts is None:
+        removed_class_counts = Counter()
+
+    normalized_class_id_to_YOLOid = {
+        int(source_class_id): int(yolo_id)
+        for source_class_id, yolo_id in class_id_to_YOLOid.items()
+    }
     
     def convert_label_file(input_path, output_path, class_id_to_YOLOid):
+        # print(f"mapping is {class_id_to_YOLOid}")
         """Read label file, convert class IDs to YOLO IDs, and write to output"""
         with open(input_path, 'r') as f:
             lines = f.readlines()
         
         converted_lines = []
-        for line in lines:
+        for line_number, line in enumerate(lines, start=1):
             parts = line.strip().split()
             if len(parts) >= 5:
                 try:
-                    old_class_id = parts[0]
+                    old_class_id = int(parts[0])
+                    # print(f"Original class_id '{old_class_id}' in {input_path}:{line_number}")
                     if old_class_id in SKIP_SET:
                         continue
-                    yolo_id = class_id_to_YOLOid.get(old_class_id, old_class_id)
-                    if str(yolo_id) in SKIP_SET:
+
+                    if old_class_id not in class_id_to_YOLOid:
+                        removed_class_counts[old_class_id] += 1
+                        print(
+                            f"Removed unmapped label in {input_path}:{line_number} "
+                            f"(class_id={old_class_id})"
+                        )
+                        continue
+
+                    yolo_id = class_id_to_YOLOid[old_class_id]
+                    if yolo_id in SKIP_SET:
                         continue
 
                     x_center = float(parts[1])
@@ -81,7 +103,7 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         label = Path(source_labels) / f"{img.stem}.txt"
         if label.exists():
             output_label = Path(output_dir) / 'labels' / 'train' / label.name
-            convert_label_file(label, output_label, class_id_to_YOLOid)
+            convert_label_file(label, output_label, normalized_class_id_to_YOLOid)
     
     # Copy val files
     for img in val_images:
@@ -89,34 +111,53 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         label = Path(source_labels) / f"{img.stem}.txt"
         if label.exists():
             output_label = Path(output_dir) / 'labels' / 'val' / label.name
-            convert_label_file(label, output_label, class_id_to_YOLOid)
+            convert_label_file(label, output_label, normalized_class_id_to_YOLOid)
+
+    return removed_class_counts
 
 # Usage - adjust paths to your export
 SORTED_IMAGES_FOLDER = os.path.join(os.path.expanduser("~"), "Documents/YOLO_Training_Data/sorted_images")
 YOLO_READY_DATASET_FOLDER = os.path.join(os.path.expanduser("~"), "Documents/GitHub/taking-stock-yolo/yolo_dataset")
-
+YAML_FILE_PATH = os.path.join(SORTED_IMAGES_FOLDER, 'data.yaml')
 # get all folders in SORTED_IMAGES_FOLDER
 folders = [f.path for f in os.scandir(SORTED_IMAGES_FOLDER) if f.is_dir()]
 
 # Collect class information
 class_names = {}
 class_id = 0
-
-# build class_names dict first
-for folder in folders:
-    class_name = os.path.basename(folder)
-    if class_name[0].isdigit():
-        class_names[class_id] = class_name
-        class_id += 1
-
-# create reverse mapping
-class_name_to_YOLOid = {v: k for k, v in class_names.items()}
+class_name_to_YOLOid = {}
 class_id_to_YOLOid = {}
-for class_name, yolo_id in class_name_to_YOLOid.items():
-    class_id = class_name.split('_')[0]
-    # print(f"Class '{class_id}' -> YOLO ID: {yolo_id}")
-    class_id_to_YOLOid[class_id] = yolo_id
+
+# load existing class names from data.yaml if it exists
+if os.path.exists(YAML_FILE_PATH):
+    with open(YAML_FILE_PATH, 'r', encoding='utf-8') as f:
+        existing_yaml = yaml.safe_load(f)
+        if 'names' in existing_yaml:
+            for idx, name in existing_yaml['names'].items():
+                class_names[int(idx)] = name
+                # create 1:1 mapping, as hack to deal with existing class IDs that are already YOLO IDs
+                class_name_to_YOLOid[name] = int(idx)
+                class_id_to_YOLOid[int(idx)] = int(idx)
+                print(f"Loaded existing class from YAML: {idx} -> {name}")
+
+else:
+    print(f"No existing YAML found at {YAML_FILE_PATH}, building class mapping from folder names.")
+    # build class_names dict first
+    for folder in folders:
+        class_name = os.path.basename(folder)
+        if class_name[0].isdigit():
+            class_names[class_id] = class_name
+            class_id += 1
+
+    # create reverse mapping
+    class_name_to_YOLOid = {v: k for k, v in class_names.items()}
+    for class_name, yolo_id in class_name_to_YOLOid.items():
+        class_id = class_name.split('_')[0]
+        # print(f"Class '{class_id}' -> YOLO ID: {yolo_id}")
+        class_id_to_YOLOid[class_id] = yolo_id
 print(f"\nClass ID to YOLO ID mapping: {class_id_to_YOLOid}")
+
+removed_class_counts = Counter()
 
 for folder in folders:
     class_name = os.path.basename(folder)
@@ -144,7 +185,8 @@ for folder in folders:
             source_labels=os.path.join(this_folder, 'labels'),
             output_dir=YOLO_READY_DATASET_FOLDER,
             class_id_to_YOLOid=class_id_to_YOLOid,
-            train_ratio=0.8
+            train_ratio=0.8,
+            removed_class_counts=removed_class_counts
         )
 
 # Create YOLO data.yaml file
@@ -157,12 +199,12 @@ yaml_data = {
 }
 
 yaml_path = os.path.join(YOLO_READY_DATASET_FOLDER, 'data.yaml')
-with open(yaml_path, 'w') as f:
-    yaml.dump(yaml_data, f, default_flow_style=False, sort_keys=False)
+with open(yaml_path, 'w', encoding='utf-8') as f:
+    yaml.dump(yaml_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
 # write a YOLO classes.txt file for reference
 classes_txt_path = os.path.join(YOLO_READY_DATASET_FOLDER, 'classes.txt')
-with open(classes_txt_path, 'w') as f:
+with open(classes_txt_path, 'w', encoding='utf-8') as f:
     for class_id in sorted(class_names.keys()):
         f.write(f"{class_names[class_id]}\n")
 
@@ -181,5 +223,13 @@ for class_name, yolo_id in class_name_to_YOLOid.items():
         source_labels=os.path.join(this_folder, 'labels'),
         output_dir=YOLO_READY_DATASET_FOLDER,
         class_id_to_YOLOid=class_id_to_YOLOid,
-        train_ratio=0.8
+        train_ratio=0.8,
+        removed_class_counts=removed_class_counts
     )
+
+total_removed_labels = sum(removed_class_counts.values())
+print(f"\nTotal unmapped labels removed: {total_removed_labels}")
+if total_removed_labels:
+    print("Removed label counts by class_id:")
+    for class_id in sorted(removed_class_counts, key=lambda class_key: int(class_key) if str(class_key).isdigit() else str(class_key)):
+        print(f"  {class_id}: {removed_class_counts[class_id]}")

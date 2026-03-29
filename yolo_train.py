@@ -2,9 +2,9 @@ from ultralytics import YOLO
 import os
 
 # Load pretrained model
-model = YOLO('yolo26x-objv1-150.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
-model2 = YOLO('yolo26x-objv1-150.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
-# DATA_FOLDER = "/Users/michael.mandiberg/Documents/takingstock_production/labeled_images_nov19"
+model = YOLO('yolo26x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x.pt
+# model2 = YOLO('yolo26x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x.pt
+# DATA_FOLDER = "/Users/michaelmandiberg/Documents/takingstock_production/labeled_images_nov19"
     
 # Source - https://stackoverflow.com/a
 # Posted by the_artemi8
@@ -27,34 +27,34 @@ model.add_callback("on_train_start", freeze_layer)
 
 # Train
 results = model.train(
-    data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml",  # absolute path
+    data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml",  # absolute path
     epochs=200,
     imgsz=640,
     batch=-1,       # Reduce if you get memory errors
-    name='takingstock_head_heart_v4_yolo26xObj',  # Experiment name
+    name='takingstock_steth_testors_yolo26x',  # Experiment name
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
     workers=8,        # ✅ CPU workers, not GPU cores
-    project='/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
+    project='/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
     exist_ok=True,  # Overwrite existing experiment with same name
     augment=True,
     cache='ram'   # ⭐ Enable RAM caching
 )
 
-results2 = model2.train(
-    data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset_mask/data.yaml",  # absolute path
-    epochs=200,
-    imgsz=640,
-    batch=16,       # Reduce if you get memory errors
-    name='takingstock_mask_v5_yolo26xObj',  # Experiment name
-    patience=20,    # Early stopping
-    device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
-    workers=8,        # ✅ CPU workers, not GPU cores
-    project='/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
-    exist_ok=True,  # Overwrite existing experiment with same name
-    augment=True,
-    cache='ram'   # ⭐ Enable RAM caching
-)
+# results2 = model2.train(
+#     data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset_mask/data.yaml",  # absolute path
+#     epochs=200,
+#     imgsz=1024,
+#     batch=-1,       # Reduce if you get memory errors
+#     name='takingstock_mask_v6_2k_yolo26x',  # Experiment name
+#     patience=20,    # Early stopping
+#     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
+#     workers=8,        # ✅ CPU workers, not GPU cores
+#     project='/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
+#     exist_ok=True,  # Overwrite existing experiment with same name
+#     augment=True,
+#     cache='ram'   # ⭐ Enable RAM caching
+# )
 
 # Source - https://stackoverflow.com/a
 # Posted by the_artemi8
