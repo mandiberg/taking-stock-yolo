@@ -4,10 +4,10 @@ import uuid
 import cv2
 
 # 📌 CONFIG — adjust these
-YOLO_ROOT = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/"
+YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/reprocess/"
 # YOLO_ROOT = "/Volumes/LaCie/segment_images_101_flowers_all/flower_image_repository/test_output"
 # DATASET_FOLDER = "sort/relabel_these"
-DATASET_FOLDER = "116/relabel_these"
+DATASET_FOLDER = "relabel_these116"
 IMAGES_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "images")
 LABELS_DIR = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labels")
 OUTPUT_JSON = os.path.join(YOLO_ROOT, DATASET_FOLDER, "labelstudio_tasks.json")

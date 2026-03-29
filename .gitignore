@@ -213,3 +213,9 @@ __marimo__/
 *.jpeg
 *.pt
 /runs
+flags/object365.xlsx
+flags/test_dataset.json
+flags/test_dataset.pretty.json
+flags/train_dataset.json
+yolo_dataset.zip
+/yolo_dataset

@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/facial_mar17"
+default_path = "/Users/michaelmandiberg/Documents/yolo/mask_facial_cucumber_etc_mar27"
 # default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
 # LOCAL_CLASS_NAMES = {
@@ -47,16 +47,20 @@ default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/
 # }
 
 LOCAL_CLASS_NAMES = {
-    0: "Chestpiece",
-    1: "Eyepatch",
-    2: "Facial",
-    3: "Headphones",
-    4: "Mask",
-    5: "Masquerade_mask",
-    6: "Sheetmask",
-    7: "Sleepmask",
-    8: "Stethoscope",
-    9: "Valentine"
+    0: "Avocado_half",
+    1: "Chestpiece",
+    2: "Cucumber",
+    3: "Eyepatch",
+    4: "Facial",
+    5: "Headphones",
+    6: "Kiwi",
+    7: "Lemon_slice",
+    8: "Mask",
+    9: "Masquerade_mask",
+    10: "Sheetmask",
+    11: "Sleepmask",
+    12: "Stethoscope",
+    13: "Valentine"
 }  
 
 
@@ -99,7 +103,14 @@ COCO_CLASS_IDS = {
     "Eyepatch": 113,
     "Sleepmask": 114,
     "Masquerade_mask": 115,
+    "Cucumber": 116,
+    "Kiwi": 117,
+    "Lemon_slice": 118,
+    "Avocado_half": 119
 }
+
+
+
 
 # Build mapping from local class ID to COCO class ID
 LOCAL_TO_COCO = {

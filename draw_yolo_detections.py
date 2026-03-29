@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 # ---- paths ----
-# DATASET_ROOT = "/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset"
-DATASET_ROOT = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/suspect_images_high_conf"
+DATASET_ROOT = "/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/flags/multi_flag/"
+# DATASET_ROOT = "/Users/michaelmandiberg/Documents/yolo/bootstrap"
 
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")

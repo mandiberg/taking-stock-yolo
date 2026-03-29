@@ -1,0 +1,12 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd /Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/flags && python coco_flags_to_yolo\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo && python flags/coco_flags_to_yolo\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

@@ -13,6 +13,14 @@ from pathlib import Path
 # - Writes:
 #   - flags/87_flag/images/
 #   - flags/87_flag/labels/
+#
+# MODE 1: build per-flag-type training set with preserved class identity
+# - Reads: flags/train_dataset.json, flags/class_map.json
+# - Images: flags/train_images/
+# - Writes:
+#   - flags/multi_flag/images/
+#   - flags/multi_flag/labels/
+#   - flags/multi_flag/data.yaml
 MODE = 0
 
 # Your reserved generic flag class in main model
@@ -49,7 +57,14 @@ MODE_CONFIG = {
         "json_path": Path("flags/train_dataset.json"),
         "images_dir": Path("flags/train_images"),
         "output_root": Path("flags") / GENERIC_FLAG_FOLDERNAME,
-    }
+    },
+    1: {
+        "json_path": Path("flags/train_dataset.json"),
+        "images_dir": Path("flags/train_images"),
+        "output_root": Path("flags") / "multi_flag",
+        "class_map_path": Path("flags/class_map.json"),
+        "use_all_categories": True,
+    },
 }
 
 
@@ -76,6 +91,39 @@ def coco_bbox_to_yolo(bbox, image_width: int, image_height: int):
 def load_coco(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_class_map(class_map_path: Path) -> tuple[dict, dict, set]:
+    """
+    Load class_map.json and build mappings for MODE 1.
+    Returns:
+    - coco_to_yolo: dict mapping COCO category_id -> yolo_class_id
+    - yolo_class_names: dict mapping yolo_class_id -> display_name
+    - excluded_coco_ids: set of COCO IDs marked as excluded
+    """
+    with open(class_map_path) as f:
+        class_map = json.load(f)
+    
+    coco_to_yolo = {}
+    yolo_class_names = {}
+    excluded_coco_ids = set()
+    
+    for entry in class_map["classes"]:
+        if not entry["include"]:
+            if entry.get("coco_category_id") is not None:
+                excluded_coco_ids.add(entry["coco_category_id"])
+            continue
+        
+        coco_id = entry.get("coco_category_id")
+        yolo_id = entry["yolo_class_id"]
+        display_name = entry.get("display_name") or entry.get("coco_name", "unknown")
+        
+        if coco_id is not None:
+            coco_to_yolo[coco_id] = yolo_id
+        
+        yolo_class_names[yolo_id] = display_name
+    
+    return coco_to_yolo, yolo_class_names, excluded_coco_ids
 
 
 def normalize_category_name(name: str) -> str:
@@ -285,8 +333,171 @@ def convert_mode_0() -> None:
     print(f"Random seed: {RANDOM_SEED}")
 
 
-if __name__ == "__main__":
-    if MODE != 0:
-        raise ValueError(f"Unsupported MODE={MODE}. Only MODE=0 is implemented now.")
+def convert_mode_1() -> None:
+    """Convert to MODE 1: per-flag-type YOLO dataset with preserved class identities."""
+    config = MODE_CONFIG[1]
+    json_path = config["json_path"]
+    images_dir = config["images_dir"]
+    output_root = config["output_root"]
+    class_map_path = config["class_map_path"]
 
-    convert_mode_0()
+    output_images_dir = output_root / "images"
+    output_labels_dir = output_root / "labels"
+
+    if not json_path.exists():
+        raise FileNotFoundError(f"JSON file not found: {json_path}")
+    if not images_dir.exists():
+        raise FileNotFoundError(f"Images directory not found: {images_dir}")
+    if not class_map_path.exists():
+        raise FileNotFoundError(f"Class map file not found: {class_map_path}")
+
+    clear_directory(output_images_dir)
+    clear_directory(output_labels_dir)
+
+    # Load class mappings
+    coco_to_yolo, yolo_class_names, excluded_coco_ids = load_class_map(class_map_path)
+
+    dataset = load_coco(json_path)
+    images = dataset.get("images", [])
+    annotations = dataset.get("annotations", [])
+
+    # For MODE 1, optionally use all images or apply sampling
+    use_all_categories = config.get("use_all_categories", False)
+    
+    if use_all_categories:
+        # Use all images instead of applying sampling
+        selected_image_ids = {img["id"] for img in images}
+    else:
+        # Apply same sampling as MODE 0
+        selected_image_ids, _, selection_stats = choose_image_subset(
+            dataset,
+            NON_PRIORITY_SAMPLE_FRACTION,
+            PRIORITY_SAMPLE_FRACTION,
+            RANDOM_SEED,
+        )
+
+    selected_images = [image for image in images if image["id"] in selected_image_ids]
+
+    # Group annotations by image and filter to included categories
+    annotations_by_image_id = defaultdict(list)
+    for annotation in annotations:
+        if annotation["image_id"] in selected_image_ids:
+            category_id = annotation["category_id"]
+            # Skip excluded categories
+            if category_id in excluded_coco_ids:
+                continue
+            annotations_by_image_id[annotation["image_id"]].append(annotation)
+
+    written_files = 0
+    written_boxes = 0
+    missing_images = 0
+    copied_images = 0
+    per_class_boxes = defaultdict(int)
+
+    for image in selected_images:
+        image_id = image["id"]
+        image_width = image["width"]
+        image_height = image["height"]
+        file_name = image["file_name"]
+
+        image_path = images_dir / file_name
+        if not image_path.exists():
+            missing_images += 1
+            continue
+
+        output_image_path = output_images_dir / file_name
+        output_image_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(image_path, output_image_path)
+        copied_images += 1
+
+        label_path = output_labels_dir / f"{Path(file_name).stem}.txt"
+
+        yolo_lines = []
+        for annotation in annotations_by_image_id.get(image_id, []):
+            bbox = annotation.get("bbox")
+            category_id = annotation.get("category_id")
+            if not bbox or len(bbox) != 4:
+                continue
+
+            # Map COCO category ID to YOLO class ID
+            yolo_class_id = coco_to_yolo.get(category_id)
+            if yolo_class_id is None:
+                # Should not happen if class_map is correct, but skip if it does
+                continue
+
+            x_center, y_center, w_norm, h_norm = coco_bbox_to_yolo(
+                bbox, image_width, image_height
+            )
+            yolo_lines.append(
+                f"{yolo_class_id} {x_center:.6f} {y_center:.6f} {w_norm:.6f} {h_norm:.6f}"
+            )
+            per_class_boxes[yolo_class_id] += 1
+
+        with label_path.open("w", encoding="utf-8") as f:
+            if yolo_lines:
+                f.write("\n".join(yolo_lines) + "\n")
+
+        written_files += 1
+        written_boxes += len(yolo_lines)
+
+    # Write data.yaml
+    data_yaml_path = output_root / "data.yaml"
+    data_yaml_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Sort class names by YOLO ID
+    sorted_class_names = {
+        yolo_id: yolo_class_names[yolo_id]
+        for yolo_id in sorted(yolo_class_names.keys())
+    }
+    
+    data_yaml_content = {
+        "path": str(output_root),
+        "train": "images",
+        "val": "images",  # No separate val set in this mode
+        "nc": len(sorted_class_names),
+        "names": sorted_class_names,
+    }
+    
+    with open(data_yaml_path, "w") as f:
+        # Write as YAML by hand to preserve ordering
+        f.write(f"path: {output_root}\n")
+        f.write("train: images\n")
+        f.write("val: images\n")
+        f.write(f"nc: {len(sorted_class_names)}\n")
+        f.write("names:\n")
+        for yolo_id in sorted(sorted_class_names.keys()):
+            class_name = sorted_class_names[yolo_id]
+            f.write(f"  {yolo_id}: {class_name}\n")
+
+    print("MODE=1 complete")
+    print(f"JSON: {json_path}")
+    print(f"Images dir: {images_dir}")
+    print(f"Class map: {class_map_path}")
+    print(f"Output root: {output_root}")
+    print(f"Output images: {output_images_dir}")
+    print(f"Output labels: {output_labels_dir}")
+    print(f"Images listed in JSON: {len(images)}")
+    print(f"Selected images: {len(selected_images)}")
+    print(f"Annotations listed in JSON: {len(annotations)}")
+    print(
+        "Selected annotations (after exclusions): "
+        f"{sum(len(annotations_by_image_id[image['id']]) for image in selected_images)}"
+    )
+    print(f"Copied images: {copied_images}")
+    print(f"Label files written: {written_files}")
+    print(f"Total YOLO boxes written: {written_boxes}")
+    print(f"Missing image files skipped: {missing_images}")
+    print(f"Total classes in class_map: {len(coco_to_yolo)}")
+    print(f"Classes with bounding boxes: {len(per_class_boxes)}")
+    if written_boxes > 0:
+        print(f"Average boxes per image: {written_boxes / written_files:.2f}")
+    print(f"data.yaml written to: {data_yaml_path}")
+
+
+if __name__ == "__main__":
+    if MODE == 0:
+        convert_mode_0()
+    elif MODE == 1:
+        convert_mode_1()
+    else:
+        raise ValueError(f"Unsupported MODE={MODE}. Supported modes: 0, 1")
