@@ -86,17 +86,17 @@ CONFIG_PROFILES = {
         "freeze": True,
         "augment": True,
     },
-    "runpod_3x4090": {
+    "runpod_6x4090": {
         "model": "yolo26x.pt",
         "data": "yolo_dataset/data.yaml",
         "epochs": 200,
         "imgsz": 640,
-        "batch": 24,
+        "batch": 72,
         "name": "takingstock_c36_v1_yolo26x",
         "project": "runs",
         "patience": 20,
-        "device": "0,1,2",
-        "workers": 12,
+        "device": "0,1,2,3,4,5",
+        "workers": 8,
         "cache": "disk",
         "amp": True,
         "cudnn": True,
@@ -105,7 +105,7 @@ CONFIG_PROFILES = {
     },
 }
 
-DEFAULT_PROFILE = "runpod_3x4090"
+DEFAULT_PROFILE = "runpod_4x4090"
 
 
 def train_once(model, *, data, epochs, imgsz, batch, name, patience, device, workers, project, augment, cache, amp):
