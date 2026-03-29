@@ -1,6 +1,0 @@
-names:
-  0: flower
-nc: 1
-path: /Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/hf_yolo_dataset
-train: images/train
-val: images/test

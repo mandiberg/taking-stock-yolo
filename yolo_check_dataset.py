@@ -185,7 +185,9 @@ def main():
         unopenable = len(info['unopenable_images'])
         missing_images_for_labels = len(info['missing_images_for_labels'])
         print(f"{split}: images={imgs}, labels={labs}, backgrounds={backgrounds}, corrupt_labels={corrupt_labels}, unopenable_images={unopenable}, missing_images_for_labels={missing_images_for_labels}")
-
+        print("corrupt_labels:")
+        for label, problems in info['corrupt_labels'].items():
+            print(f"  {label}: {', '.join(problems)}")
 
 if __name__ == '__main__':
     main()

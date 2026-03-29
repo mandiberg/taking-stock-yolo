@@ -27,7 +27,7 @@ model.add_callback("on_train_start", freeze_layer)
 
 # Train
 results = model.train(
-    data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml",  # absolute path
+    data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml",  # absolute path
     epochs=200,
     imgsz=640,
     batch=-1,       # Reduce if you get memory errors
@@ -35,7 +35,7 @@ results = model.train(
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
     workers=8,        # ✅ CPU workers, not GPU cores
-    project='/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
+    project='/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
     exist_ok=True,  # Overwrite existing experiment with same name
     augment=True,
     cache='ram'   # ⭐ Enable RAM caching
