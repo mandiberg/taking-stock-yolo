@@ -25,6 +25,8 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+from class_map_utils import get_id_to_name, resolve_class_name_to_id
+
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -34,31 +36,44 @@ class TargetClass:
     source_name: str
     global_id: int
     folder_name: str
+    canonical_name: str
 
 
-def parse_mapping_entry(entry: str) -> TargetClass:
-    """Parse mapping entry in format: Source Name=123_folder_name"""
-    if "=" not in entry:
-        raise ValueError(f"Invalid mapping '{entry}'. Expected 'Source Name=123_folder'.")
+def make_folder_name(class_id: int, canonical_name: str) -> str:
+    return f"{class_id}_{canonical_name}"
 
-    source_name, rhs = entry.split("=", 1)
-    source_name = source_name.strip()
-    rhs = rhs.strip()
 
-    if not source_name or not rhs:
-        raise ValueError(f"Invalid mapping '{entry}'. Empty side found.")
+def build_targets_from_source_classes(source_classes: list[str]) -> list[TargetClass]:
+    id_to_name = get_id_to_name()
+    targets = []
 
-    id_part = rhs.split("_", 1)[0]
-    if not id_part.isdigit():
-        raise ValueError(
-            f"Invalid mapping '{entry}'. Right side must start with numeric class_id."
+    for source_name in source_classes:
+        source_name = source_name.strip()
+        if not source_name:
+            continue
+
+        resolved_id = resolve_class_name_to_id(source_name)
+        if resolved_id is None:
+            raise ValueError(
+                f"Could not resolve source class '{source_name}' in custom_class_map.json"
+            )
+
+        canonical_name = id_to_name.get(resolved_id, f"class_{resolved_id}")
+        folder_name = make_folder_name(resolved_id, canonical_name)
+
+        targets.append(
+            TargetClass(
+                source_name=source_name,
+                global_id=resolved_id,
+                folder_name=folder_name,
+                canonical_name=canonical_name,
+            )
         )
 
-    return TargetClass(
-        source_name=source_name,
-        global_id=int(id_part),
-        folder_name=rhs,
-    )
+    if not targets:
+        raise ValueError("No source classes provided. Use --source-class at least once.")
+
+    return targets
 
 
 def load_staging_classes(classes_file: Path) -> list[str]:
@@ -254,13 +269,14 @@ def parse_args() -> argparse.Namespace:
         help="Root where per-class folders will be written",
     )
     parser.add_argument(
-        "--map",
+        "--source-class",
         action="append",
-        default=[
-            "Tablet computer=124_Tablet",
-            "Calculator=127_Calculator",
-        ],
-        help="Mapping entry: 'Open Images Class=globalid_foldername'. Repeat per class.",
+        default=[],
+        help=(
+            "Open Images class name. The script resolves global ID from "
+            "config/custom_class_map.json and auto-generates folder name '<id>_<canonical_name>'. "
+            "Repeat this flag for multiple classes."
+        ),
     )
     parser.add_argument(
         "--apply",
@@ -277,15 +293,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    mappings = [parse_mapping_entry(entry) for entry in args.map]
+    source_classes = args.source_class or ["Tablet computer", "Calculator"]
+    mappings = build_targets_from_source_classes(source_classes)
 
     # Validate duplicate global IDs or source names in provided mapping.
     source_names = [m.source_name for m in mappings]
     global_ids = [m.global_id for m in mappings]
     if len(source_names) != len(set(source_names)):
-        raise ValueError("Duplicate source class names found in --map entries")
+        raise ValueError("Duplicate source class names found in --source-class entries")
     if len(global_ids) != len(set(global_ids)):
-        raise ValueError("Duplicate global IDs found in --map entries")
+        raise ValueError("Duplicate global IDs found in resolved source classes")
 
     route(
         staging_dir=args.staging_dir,

@@ -3,6 +3,8 @@ import json
 import re
 import cv2
 
+from class_map_utils import get_id_to_name
+
 # 📌 CONFIG — adjust these
 YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/reprocess/"
 # YOLO_ROOT = "/Volumes/LaCie/test_output/label_studio_ready"
@@ -40,57 +42,8 @@ def get_suppression_config(dataset_folder):
         )
     return suppression_enabled, batch_class_id
 
-# 📌 You must manually list your classes here
-CLASSES = {
-    80: "Sign",
-    81: "Gift",
-    82: "Money",
-    83: "Bag",
-    84: "Valentine",
-    85: "Salad",
-    86: "Dumbbell",
-    87: "Flag",
-    88: "Groceries",
-    89: "Chestpiece",
-    90: "Stethoscope",
-    91: "Gun",
-    92: "Headphones",
-    93: "Clipboard",
-    94: "Piggybank",
-    95: "Creditcard",
-    96: "Bitcoin",
-    97: "Rose",
-    98: "Lily",
-    99: "Iris",
-    100: "Tulip",
-    101: "Lisianthus",
-    102: "Orchid",
-    103: "Peony",
-    104: "Sunflower",
-    105: "Daisy",
-    106: "Daffodil",
-    107: "Hydrangea",
-    108: "Pistol",
-    109: "Rifle",
-    110: "Mask",
-    111: "Facial",
-    112: "Sheetmask",
-    113: "Eyepatch",
-    114: "Sleepmask",
-    115: "Masquerade_mask",
-    116: "Cucumber",
-    117: "Kiwi",
-    118: "Lemon_slice",
-    119: "Avocado_half",
-    120: "Eyeglasses",
-    121: "Cigarette",
-    122: "Vape",
-    123: "Boxing_gloves",
-    124: "Tablet",
-    125: "Picture_frame",
-    126: "Playing_cards",  
-
-}
+# Canonical classes are loaded from config/custom_class_map.json
+CLASSES = get_id_to_name(min_id=80, max_id=128)
 
 # CLASSES = {
 #     0: "Afghanistan",

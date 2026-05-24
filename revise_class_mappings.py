@@ -8,6 +8,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from class_map_utils import resolve_class_name_to_id
+
 default_path = "/Users/michaelmandiberg/Documents/yolo/reprocess/calculator_good"
 # default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
@@ -114,72 +116,24 @@ LOCAL_CLASS_NAMES = {
     47: "Calculator",
 }
 
-# Mapping from class name to COCO class ID
-COCO_CLASS_IDS = {
-    "Sign": 80,
-    "Gift": 81,
-    "Money": 82,
-    "Bag": 83,
-    "Valentine": 84,
-    "Salad": 85, # not in use
-    "Dumbbell": 86,
-    "Flag": 87,
-    "Groceries": 88,
-    "Chestpiece": 89,
-    "Stethoscope": 90,
-    "Gun": 91,
-    "Headphones": 92,
-    "Clipboard": 93, # not in use
-    "Piggybank": 94,
-    "Creditcard": 95,
-    "Bitcoin": 96,
-    "Rose": 97,
-    "Lily": 98,
-    "Iris": 99,
-    "Tulip": 100,
-    "Lisianthus": 101,
-    "Orchid": 102,
-    "Peony": 103,
-    "Sunflower": 104,
-    "Daisy": 105,
-    "Daffodil": 106,
-    "Hydrangea": 107,
-    "Pistol": 108,
-    "Rifle": 109,
-    "Mask": 110,
-    "Facial": 111,
-    "Sheetmask": 112,
-    "Eyepatch": 113,
-    "Sleepmask": 114,
-    "Masquerade_mask": 115,
-    "Cucumber": 116,
-    "Kiwi": 117,
-    "Lemon_slice": 118,
-    "Avocado_half": 119,
-    "Eyeglasses": 120,
-    "Cigarette": 121,
-    "Vape": 122,
-    "Boxing_gloves": 123,
-    "Tablet": 124,
-    "Picture_frame": 125,
-    "Playing_cards": 126,
-    "Calculator": 127,
-    "Megaphone": 128,
-}
-
-
-
-# Build mapping from local class ID to COCO class ID
-LOCAL_TO_COCO = {
-    local_id: COCO_CLASS_IDS[LOCAL_CLASS_NAMES[local_id]]
-    for local_id in LOCAL_CLASS_NAMES
-    if LOCAL_CLASS_NAMES[local_id] in COCO_CLASS_IDS
-}
+LOCAL_TO_COCO = {}
+UNMAPPED_LOCAL = {}
+for local_id, local_name in LOCAL_CLASS_NAMES.items():
+    resolved = resolve_class_name_to_id(local_name)
+    if resolved is None:
+        UNMAPPED_LOCAL[local_id] = local_name
+        continue
+    LOCAL_TO_COCO[local_id] = resolved
 
 def remap_labels(base_dir: Path) -> None:
     labels_dir = base_dir / "labels"
     if not labels_dir.exists():
         raise FileNotFoundError(f"Labels directory not found: {labels_dir}")
+
+    if UNMAPPED_LOCAL:
+        print("Warning: some LOCAL_CLASS_NAMES entries are not in custom_class_map.json")
+        for local_id, local_name in sorted(UNMAPPED_LOCAL.items()):
+            print(f"  local {local_id}: {local_name}")
 
     total_files = 0
     changed_files = 0
