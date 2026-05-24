@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": 1,
+    "version": 2,
     "description": "Canonical custom class ID map for taking-stock-yolo"
   },
   "classes": [
@@ -15,7 +15,7 @@
     {"id": 88, "name": "Groceries"},
     {"id": 89, "name": "Chestpiece"},
     {"id": 90, "name": "Stethoscope"},
-    {"id": 91, "name": "Gun"},
+    {"id": 91, "name": "Glasses", "aliases": ["Sunglasses"]},
     {"id": 92, "name": "Headphones"},
     {"id": 93, "name": "Clipboard"},
     {"id": 94, "name": "Piggybank"},
@@ -52,6 +52,16 @@
     {"id": 125, "name": "Picture_frame"},
     {"id": 126, "name": "Playing_cards"},
     {"id": 127, "name": "Calculator"},
-    {"id": 128, "name": "Megaphone"}
+    {"id": 128, "name": "Megaphone"},
+    {"id": 129, "name": "Drill_tool", "aliases": ["Drill (Tool)", "Drill"]},
+    {"id": 130, "name": "Camera"},
+    {"id": 131, "name": "Binoculars"},
+    {"id": 132, "name": "Microphone"},
+    {"id": 133, "name": "Remote_control", "aliases": ["Remote control"]},
+    {"id": 134, "name": "Book"},
+    {"id": 135, "name": "Computer_monitor", "aliases": ["Computer monitor"]},
+    {"id": 136, "name": "Laptop"},
+    {"id": 137, "name": "Phone_handheld", "aliases": ["Mobile phone", "Telephone", "Phone"]},
+    {"id": 139, "name": "Corded_phone", "aliases": ["Corded phone"]}
   ]
 }

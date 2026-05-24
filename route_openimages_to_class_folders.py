@@ -76,6 +76,24 @@ def build_targets_from_source_classes(source_classes: list[str]) -> list[TargetC
     return targets
 
 
+def build_targets_from_staging_classes(staging_classes: list[str]) -> tuple[list[TargetClass], list[str]]:
+    """
+    Resolve all staging classes against canonical map.
+    Returns (targets, unresolved_source_names).
+    """
+    resolved_targets: list[TargetClass] = []
+    unresolved: list[str] = []
+
+    for source_name in staging_classes:
+        try:
+            target = build_targets_from_source_classes([source_name])[0]
+            resolved_targets.append(target)
+        except ValueError:
+            unresolved.append(source_name)
+
+    return resolved_targets, unresolved
+
+
 def load_staging_classes(classes_file: Path) -> list[str]:
     if not classes_file.exists():
         raise FileNotFoundError(f"classes.txt not found: {classes_file}")
@@ -243,13 +261,20 @@ def route(
     else:
         print("Unmapped local IDs encountered: {}")
 
-    print("Per-target image counts:")
+    # Deduplicate display rows for alias-merged classes (multiple source names -> one global ID).
+    by_global_id: dict[int, TargetClass] = {}
     for target in sorted(mappings, key=lambda item: item.global_id):
-        print(f"  {target.global_id} ({target.folder_name}): {class_image_counts[target.global_id]}")
+        by_global_id[target.global_id] = target
+
+    print("Per-target image counts:")
+    for global_id in sorted(by_global_id):
+        target = by_global_id[global_id]
+        print(f"  {global_id} ({target.folder_name}): {class_image_counts[global_id]}")
 
     print("Per-target box counts:")
-    for target in sorted(mappings, key=lambda item: item.global_id):
-        print(f"  {target.global_id} ({target.folder_name}): {class_box_counts[target.global_id]}")
+    for global_id in sorted(by_global_id):
+        target = by_global_id[global_id]
+        print(f"  {global_id} ({target.folder_name}): {class_box_counts[global_id]}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -293,16 +318,25 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    source_classes = args.source_class or ["Tablet computer", "Calculator"]
-    mappings = build_targets_from_source_classes(source_classes)
+    if args.source_class:
+        mappings = build_targets_from_source_classes(args.source_class)
+    else:
+        staging_classes = load_staging_classes(args.staging_dir / "classes.txt")
+        mappings, unresolved = build_targets_from_staging_classes(staging_classes)
+        print("No --source-class provided; using all staging classes resolvable in canonical map.")
+        if unresolved:
+            print(f"Unresolved staging classes (skipped): {unresolved}")
+
+        if not mappings:
+            raise ValueError(
+                "No staging classes could be resolved in custom_class_map.json. "
+                "Provide --source-class or update class aliases."
+            )
 
     # Validate duplicate global IDs or source names in provided mapping.
     source_names = [m.source_name for m in mappings]
-    global_ids = [m.global_id for m in mappings]
     if len(source_names) != len(set(source_names)):
         raise ValueError("Duplicate source class names found in --source-class entries")
-    if len(global_ids) != len(set(global_ids)):
-        raise ValueError("Duplicate global IDs found in resolved source classes")
 
     route(
         staging_dir=args.staging_dir,
