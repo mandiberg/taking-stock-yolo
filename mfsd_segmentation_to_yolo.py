@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Convert MFSD segmentation masks to YOLOv8 bbox labels.
+"""Convert eyeglasses segmentation files into YOLOv8 bbox labels.
 
-This script reads MFSD mask images from:
-- <MSFD_PATH>/1/face_crop_segmentation
-and matches them with source images in:
-- <MSFD_PATH>/1/face_crop
+Expected input layout:
+- A single folder containing files with stems ending in variants like
+    "-all", "-seg", and "-sunglasses".
 
-For each segmentation mask, it computes a single bounding box around non-zero pixels
-(mask region) and writes YOLO label files.
+For each base stem, this script requires all three files:
+- <base>-all.<ext>
+- <base>-seg.<ext>
+- <base>-sunglasses.<ext>
 
-Important:
-- This script never edits files in the source dataset.
-- Output is written to a separate folder only.
+The bounding box is computed from the foreground of the "seg" image and then
+written to both "all" and "sunglasses" label files. Incomplete groups are skipped.
 """
 
 from __future__ import annotations
@@ -19,15 +19,16 @@ from __future__ import annotations
 import argparse
 import shutil
 from pathlib import Path
-from typing import Iterable
+from typing import NamedTuple
 
 import numpy as np
 from PIL import Image
 
-DEFAULT_MSFD_PATH = Path("/Users/michaelmandiberg/Documents/yolo/MSFD")
-DEFAULT_OUTPUT_FOLDER = Path("/Users/michaelmandiberg/Documents/yolo/MSFD_YOLO")
+DEFAULT_INPUT_FOLDER = Path("/Users/michaelmandiberg/Documents/yolo/glasses-segmentation-synthetic/test")
+DEFAULT_OUTPUT_FOLDER = Path("/Users/michaelmandiberg/Documents/yolo/glasses-segmentation-synthetic/yolo")
+DEFAULT_CLASS_ID = 120
 DEFAULT_TIGHTNESS = 0
-STRAP_TRIM_PERCENTILE = .2
+TARGET_VARIANTS = ("all", "seg", "sunglasses")
 
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
@@ -35,13 +36,13 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Convert MFSD segmentation masks into YOLOv8 bounding-box labels."
+        description="Convert eyeglasses segmentation files into YOLOv8 bounding-box labels."
     )
     parser.add_argument(
-        "--msfd-path",
+        "--input-folder",
         type=Path,
-        default=DEFAULT_MSFD_PATH,
-        help=f"Path to MFSD root directory (default: {DEFAULT_MSFD_PATH})",
+        default=DEFAULT_INPUT_FOLDER,
+        help=f"Path to folder containing all/seg/sunglasses files (default: {DEFAULT_INPUT_FOLDER})",
     )
     parser.add_argument(
         "--output-folder",
@@ -52,8 +53,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--class-id",
         type=int,
-        default=0,
-        help="YOLO class ID for mask bbox labels (default: 0)",
+        default=DEFAULT_CLASS_ID,
+        help=f"YOLO class ID for glasses bbox labels (default: {DEFAULT_CLASS_ID})",
     )
     parser.add_argument(
         "--threshold",
@@ -108,6 +109,12 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+class GroupFiles(NamedTuple):
+    all_image: Path
+    seg_image: Path
+    sunglasses_image: Path
+
+
 def find_image_files(folder: Path) -> dict[str, Path]:
     files: dict[str, Path] = {}
     for path in folder.iterdir():
@@ -116,13 +123,42 @@ def find_image_files(folder: Path) -> dict[str, Path]:
     return files
 
 
-def iter_pairs(
-    source_images: dict[str, Path],
-    segmentation_images: dict[str, Path],
-) -> Iterable[tuple[str, Path, Path]]:
-    common_stems = sorted(set(source_images.keys()) & set(segmentation_images.keys()))
-    for stem in common_stems:
-        yield stem, source_images[stem], segmentation_images[stem]
+def split_variant(stem: str) -> tuple[str, str] | None:
+    if "-" not in stem:
+        return None
+    base, variant = stem.rsplit("-", 1)
+    if not base or not variant:
+        return None
+    return base, variant
+
+
+def build_complete_groups(image_files: dict[str, Path]) -> tuple[dict[str, GroupFiles], int]:
+    grouped: dict[str, dict[str, Path]] = {}
+
+    for stem, path in image_files.items():
+        parsed = split_variant(stem)
+        if parsed is None:
+            continue
+        base, variant = parsed
+        grouped.setdefault(base, {})[variant] = path
+
+    complete: dict[str, GroupFiles] = {}
+    skipped_incomplete = 0
+    for base in sorted(grouped.keys()):
+        variants = grouped[base]
+        if not all(v in variants for v in TARGET_VARIANTS):
+            skipped_incomplete += 1
+            missing = [v for v in TARGET_VARIANTS if v not in variants]
+            print(f"[ALERT] Skipping base '{base}': missing required variants {missing}")
+            continue
+
+        complete[base] = GroupFiles(
+            all_image=variants["all"],
+            seg_image=variants["seg"],
+            sunglasses_image=variants["sunglasses"],
+        )
+
+    return complete, skipped_incomplete
 
 
 def mask_to_bbox(mask_path: Path, threshold: int) -> tuple[int, int, int, int] | None:
@@ -134,11 +170,10 @@ def mask_to_bbox(mask_path: Path, threshold: int) -> tuple[int, int, int, int] |
     if len(xs) == 0:
         return None
 
-    # Remove thin outlier tails (typically elastic straps) using robust percentiles.
-    x_low = int(np.floor(np.percentile(xs, STRAP_TRIM_PERCENTILE)))
-    x_high = int(np.ceil(np.percentile(xs, 100.0 - STRAP_TRIM_PERCENTILE)))
-    y_low = int(np.floor(np.percentile(ys, STRAP_TRIM_PERCENTILE)))
-    y_high = int(np.ceil(np.percentile(ys, 100.0 - STRAP_TRIM_PERCENTILE)))
+    x_low = int(xs.min())
+    x_high = int(xs.max())
+    y_low = int(ys.min())
+    y_high = int(ys.max())
 
     x_low = max(0, x_low)
     y_low = max(0, y_low)
@@ -208,13 +243,13 @@ def bbox_to_yolo(
     return x, y, w, h
 
 
-def write_data_yaml(output_folder: Path) -> None:
+def write_data_yaml(output_folder: Path, class_id: int) -> None:
     data_yaml = output_folder / "data.yaml"
-    content = """path: .
+    content = f"""path: .
 train: images
 val: images
 names:
-  0: mask
+  {class_id}: glasses
 """
     data_yaml.write_text(content, encoding="utf-8")
 
@@ -222,76 +257,103 @@ names:
 def main() -> None:
     args = parse_args()
 
-    split1 = args.msfd_path / "1"
-    source_dir = split1 / "face_crop"
-    segmentation_dir = split1 / "face_crop_segmentation"
-
-    if not source_dir.exists():
-        raise FileNotFoundError(f"Source images folder not found: {source_dir}")
-    if not segmentation_dir.exists():
-        raise FileNotFoundError(f"Segmentation folder not found: {segmentation_dir}")
+    if not args.input_folder.exists():
+        raise FileNotFoundError(f"Input folder not found: {args.input_folder}")
+    if not args.input_folder.is_dir():
+        raise NotADirectoryError(f"Input path is not a directory: {args.input_folder}")
 
     out_images = args.output_folder / "images"
     out_labels = args.output_folder / "labels"
     out_images.mkdir(parents=True, exist_ok=True)
     out_labels.mkdir(parents=True, exist_ok=True)
 
-    source_images = find_image_files(source_dir)
-    segmentation_images = find_image_files(segmentation_dir)
+    image_files = find_image_files(args.input_folder)
+    complete_groups, skipped_incomplete = build_complete_groups(image_files)
+    groups = sorted(complete_groups.items(), key=lambda item: item[0])
 
-    pairs = list(iter_pairs(source_images, segmentation_images))
     if args.test_mode:
-        pairs = pairs[: args.limit]
+        groups = groups[: args.limit]
 
-    print(f"Found {len(source_images)} source images in: {source_dir}")
-    print(f"Found {len(segmentation_images)} segmentation images in: {segmentation_dir}")
-    print(f"Matched {len(pairs)} image/mask pairs for processing")
+    print(f"Found {len(image_files)} total images in: {args.input_folder}")
+    print(f"Found {len(complete_groups)} complete all/seg/sunglasses groups")
+    print(f"Scheduled {len(groups)} groups for processing")
     print(f"Output folder: {args.output_folder}")
     print("Source dataset remains unchanged (read-only access).")
 
-    processed = 0
-    written = 0
-    empty = 0
+    processed_groups = 0
+    written_all = 0
+    written_sunglasses = 0
+    skipped_empty_seg = 0
+    skipped_size_mismatch = 0
 
-    for stem, image_path, mask_path in pairs:
-        processed += 1
+    for base, group in groups:
+        processed_groups += 1
 
-        with Image.open(image_path) as img:
-            img_w, img_h = img.size
+        with Image.open(group.seg_image) as seg_img:
+            seg_w, seg_h = seg_img.size
 
-        bbox = mask_to_bbox(mask_path, threshold=args.threshold)
-        label_path = out_labels / f"{stem}.txt"
+        with Image.open(group.all_image) as all_img:
+            all_w, all_h = all_img.size
+        with Image.open(group.sunglasses_image) as sunglasses_img:
+            sunglasses_w, sunglasses_h = sunglasses_img.size
+
+        if (all_w, all_h) != (seg_w, seg_h) or (sunglasses_w, sunglasses_h) != (seg_w, seg_h):
+            print(
+                f"[ALERT] Skipping base '{base}': size mismatch "
+                f"seg=({seg_w}x{seg_h}), all=({all_w}x{all_h}), "
+                f"sunglasses=({sunglasses_w}x{sunglasses_h})"
+            )
+            skipped_size_mismatch += 1
+            continue
+
+        bbox = mask_to_bbox(group.seg_image, threshold=args.threshold)
 
         if bbox is None:
-            label_path.write_text("", encoding="utf-8")
-            empty += 1
-        else:
-            bbox = tighten_bbox(
-                bbox,
-                image_width=img_w,
-                image_height=img_h,
-                tightness=args.tightness,
-            )
-            x, y, w, h = bbox_to_yolo(bbox, image_width=img_w, image_height=img_h)
-            label_line = f"{args.class_id} {x:.6f} {y:.6f} {w:.6f} {h:.6f}\n"
-            label_path.write_text(label_line, encoding="utf-8")
-            written += 1
+            print(f"[ALERT] Skipping base '{base}': seg mask has no foreground")
+            skipped_empty_seg += 1
+            continue
 
-        if args.copy_images:
-            shutil.copy2(image_path, out_images / image_path.name)
+        bbox = tighten_bbox(
+            bbox,
+            image_width=seg_w,
+            image_height=seg_h,
+            tightness=args.tightness,
+        )
 
-        if processed % 100 == 0:
+        label_line = "{class_id} {x:.6f} {y:.6f} {w:.6f} {h:.6f}\n"
+        for target in (group.all_image, group.sunglasses_image):
+            x, y, w, h = bbox_to_yolo(bbox, image_width=seg_w, image_height=seg_h)
+            label_text = label_line.format(class_id=args.class_id, x=x, y=y, w=w, h=h)
+            label_path = out_labels / f"{target.stem}.txt"
+            label_path.write_text(label_text, encoding="utf-8")
+
+            if target is group.all_image:
+                written_all += 1
+            else:
+                written_sunglasses += 1
+
+            if args.copy_images:
+                shutil.copy2(target, out_images / target.name)
+
+        if processed_groups % 100 == 0:
             print(
-                f"Processed {processed}/{len(pairs)} | labels: {written} | empty: {empty}"
+                "Processed "
+                f"{processed_groups}/{len(groups)} groups | "
+                f"labels(all): {written_all} | "
+                f"labels(sunglasses): {written_sunglasses} | "
+                f"skipped: {skipped_empty_seg + skipped_size_mismatch}"
             )
 
     if args.write_data_yaml:
-        write_data_yaml(args.output_folder)
+        write_data_yaml(args.output_folder, class_id=args.class_id)
 
     print("\nDone.")
-    print(f"Processed: {processed}")
-    print(f"Labels with bbox: {written}")
-    print(f"Empty labels (no mask pixels found): {empty}")
+    print(f"Processed groups: {processed_groups}")
+    print(f"Labels written for all: {written_all}")
+    print(f"Labels written for sunglasses: {written_sunglasses}")
+    print(f"Skipped incomplete groups: {skipped_incomplete}")
+    print(f"Skipped empty seg masks: {skipped_empty_seg}")
+    print(f"Skipped size mismatches: {skipped_size_mismatch}")
     print(f"Saved labels to: {out_labels}")
     if args.copy_images:
         print(f"Saved images to: {out_images}")

@@ -1,10 +1,14 @@
 import os
 
-# ROOT = os.path.join("/Volumes/OWC5/segment_images_92_headphones", "test_output/sort")
-ROOT = os.path.join("/Volumes/OWC5/segment_images_87_flag", "test_output/sort")
+# ROOT = os.path.join("/Volumes/LaCie", "test_output/sort")
+ROOT = os.path.join("/Volumes/OWC5/segment_images_93", "test_output/sort")
 # ROOT = os.path.join("/Users/michael.mandiberg/Documents/YOLO_Training_Data/reprocess/smoking_and_drinking", "test_output/sort")
 # ROOT = os.path.join("/Users/michaelmandiberg/Documents/yolo", "gun_sort_forV3/sort")
 # SPLITS = ["train", "val"]
+
+# set to True to do a full set of subfolders. in which case you pick the folder holding the folders
+WALK_FOLDERS = False 
+
 move_list_folder = os.path.join(ROOT, "move_these")
 relabel_list_folder = os.path.join(ROOT, "relabel_these")
 files_to_move_folder = os.path.join(ROOT, "all_yolo_labels")
@@ -31,11 +35,17 @@ def extract_uid(filename: str):
 		return parts[1]
 
 
+def is_hidden_file(filename: str):
+	return filename.startswith(".")
+
+
 def index_files_by_uid(base_dir: str):
 	image_exts = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
 	images_by_uid = {}
 	labels_by_uid = {}
 	for name in os.listdir(base_dir):
+		if is_hidden_file(name):
+			continue
 		path = os.path.join(base_dir, name)
 		if not os.path.isfile(path):
 			continue
@@ -70,36 +80,34 @@ def move_files(files_to_move_folder: str, move_list_folder: str, save_labels: bo
 		labels_out = os.path.join(move_list_folder, "labels")
 		ensure_dir(labels_out)
 
-	images_by_uid, labels_by_uid = index_files_by_uid(files_to_move_folder)
-
-	# Build set of UIDs from files present in move_list_folder (or move_list_folder/images)
+	# Build set of UIDs from reference files present in move_list_folder root only.
+	# Skip generated output folders such as images/, labels/, and sorted_jpgs/.
 	image_exts = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
-	move_search_dirs = [move_list_folder]
-	images_subdir = os.path.join(move_list_folder, "images")
-	if os.path.isdir(images_subdir):
-		move_search_dirs.append(images_subdir)
-
 	uids = set()
 	seen_files = 0
-	for search_dir in move_search_dirs:
-		for name in os.listdir(search_dir):
-			path = os.path.join(search_dir, name)
-			if not os.path.isfile(path):
-				continue
-			seen_files += 1
-			root, ext = os.path.splitext(name)
-			if ext in image_exts or ext == "":
-				uid = extract_uid(name)
-				if uid is not None:
-					uids.add(uid)
+	for name in os.listdir(move_list_folder):
+		if is_hidden_file(name):
+			continue
+		path = os.path.join(move_list_folder, name)
+		if not os.path.isfile(path):
+			continue
+		seen_files += 1
+		_, ext = os.path.splitext(name)
+		if ext not in image_exts:
+			continue
+		uid = extract_uid(name)
+		if uid is not None:
+			uids.add(uid)
 
 	if seen_files == 0:
-		print(f"No files found in move list folder: {move_list_folder}. Nothing to do.")
+		print(f"No reference JPGs found in {move_list_folder}; skipping.")
 		return 0, 0, 0, 0
 
 	if not uids:
-		print("No image names found in move list folder. Nothing to do.")
+		print(f"No valid reference JPGs found in {move_list_folder}; skipping.")
 		return 0, 0, 0, 0
+
+	images_by_uid, labels_by_uid = index_files_by_uid(files_to_move_folder)
 
 	moved_images = 0
 	moved_labels = 0
@@ -134,40 +142,78 @@ def move_files(files_to_move_folder: str, move_list_folder: str, save_labels: bo
 					moved_labels += 1
 	return moved_images, moved_labels, missing_images, missing_labels
 
+def move_reference_jpgs(target_folder: str):
+	"""Move reference sorting images from target_folder root into target_folder/sorted_jpgs/."""
+	image_exts = (".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG")
+	sorted_jpgs_dir = os.path.join(target_folder, "sorted_jpgs")
+	moved = 0
+	for name in os.listdir(target_folder):
+		if is_hidden_file(name):
+			continue
+		path = os.path.join(target_folder, name)
+		if not os.path.isfile(path):
+			continue
+		_, ext = os.path.splitext(name)
+		if ext in image_exts:
+			ensure_dir(sorted_jpgs_dir)
+			dst = os.path.join(sorted_jpgs_dir, name)
+			if os.path.exists(dst):
+				print(f"[SKIP] Reference JPG already exists at destination: {dst}")
+			else:
+				os.rename(path, dst)
+				moved += 1
+	if moved:
+		print(f"Moved {moved} reference JPG(s) to: {sorted_jpgs_dir}")
+
+
+def process_sort_folder(files_to_move_folder: str, sort_folder: str):
+	"""Run move_files() for move_these/, relabel_these/, and decoys/ inside sort_folder."""
+	ops = [
+		("move_these", True),
+		("relabel_these", True),
+		("decoys", False),
+	]
+	for subfolder_name, save_labels in ops:
+		target = os.path.join(sort_folder, subfolder_name)
+		if not os.path.isdir(target):
+			print(f"[WARN] '{subfolder_name}' not found in {sort_folder}, skipping.")
+			continue
+		moved_images, moved_labels, missing_images, missing_labels = move_files(
+			files_to_move_folder, target, save_labels=save_labels
+		)
+		print(f"\nDone. Data for: {target}")
+		print(f"Moved images: {moved_images}")
+		print(f"Moved labels: {moved_labels}")
+		print(f"Missing images: {missing_images}")
+		print(f"Missing labels: {missing_labels}")
+		print(f"Data saved to: {files_to_move_folder}")
+		move_reference_jpgs(target)
+
+
 def main():
-	if not os.path.isdir(move_list_folder):
-		print(f"Move list folder not found: {move_list_folder}")
-		return
 	ensure_dir(files_to_move_folder)
-	ensure_dir(relabel_list_folder)
-	ensure_dir(decoy_list_folder)
 
-	moved_images, moved_labels, missing_images, missing_labels = move_files(files_to_move_folder, move_list_folder)
-
-	print(f"\nDone. Data for: {move_list_folder}")
-	print(f"Moved images: {moved_images}")
-	print(f"Moved labels: {moved_labels}")
-	print(f"Missing images: {missing_images}")
-	print(f"Missing labels: {missing_labels}")
-	print(f"Data saved to: {files_to_move_folder}")
-
-	moved_images, moved_labels, missing_images, missing_labels = move_files(files_to_move_folder, relabel_list_folder)
-
-	print(f"\nDone. Data for: {relabel_list_folder}")
-	print(f"Moved images: {moved_images}")
-	print(f"Moved labels: {moved_labels}")
-	print(f"Missing images: {missing_images}")
-	print(f"Missing labels: {missing_labels}")
-	print(f"Data saved to: {files_to_move_folder}")
-
-	moved_images, moved_labels, missing_images, missing_labels = move_files(files_to_move_folder, decoy_list_folder, save_labels=False)
-
-	print(f"\nDone. Data for: {decoy_list_folder}")
-	print(f"Moved images: {moved_images}")
-	print(f"Moved labels: {moved_labels}")
-	print(f"Missing images: {missing_images}")
-	print(f"Missing labels: {missing_labels}")
-	print(f"Data saved to: {files_to_move_folder}")
+	if WALK_FOLDERS:
+		all_yolo_labels_name = os.path.basename(files_to_move_folder)
+		subfolders = sorted([
+			os.path.join(ROOT, name)
+			for name in os.listdir(ROOT)
+			if os.path.isdir(os.path.join(ROOT, name)) and not is_hidden_file(name) and name != all_yolo_labels_name
+		])
+		if not subfolders:
+			print(f"No subfolders found in ROOT: {ROOT}")
+			return
+		print(f"Found {len(subfolders)} folder(s) to process in {ROOT}")
+		for folder in subfolders:
+			print(f"\n=== Processing folder: {folder} ===")
+			process_sort_folder(files_to_move_folder, folder)
+	else:
+		if not os.path.isdir(move_list_folder):
+			print(f"Move list folder not found: {move_list_folder}")
+			return
+		ensure_dir(relabel_list_folder)
+		ensure_dir(decoy_list_folder)
+		process_sort_folder(files_to_move_folder, ROOT)
 
 
 if __name__ == "__main__":

@@ -1,41 +1,7 @@
 path: /Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset
 train: images/train
 val: images/val
-nc: 36
+nc: 2
 names:
-  0: 109_rifle
-  1: 89_chestpiece
-  2: 117_kiwi
-  3: 113_eyepatch
-  4: 108_pistol
-  5: 100_tulip
-  6: 116_cucumber
-  7: 114_sleepmask
-  8: 88_groceries
-  9: 112_sheetmask
-  10: 118_citrus
-  11: 90_stethoscope
-  12: 92_headphones
-  13: 107_hydrangea
-  14: 84_valentine
-  15: 97_rose
-  16: 83_bag
-  17: 81_gift
-  18: 104_sunflower
-  19: 82_money
-  20: 98_lily
-  21: 94_piggybank
-  22: 95_creditcard
-  23: 86_dumbbell
-  24: 119_avocado
-  25: 106_daffodil
-  26: 80_sign
-  27: 102_orchid
-  28: 110_mask
-  29: 96_bitcoin
-  30: 101_lisianthus
-  31: 99_iris
-  32: 105_daisy
-  33: 103_peony
-  34: 115_Masquerade_mask
-  35: 111_facial
+  0: 127_calculator
+  1: 93_clipboard

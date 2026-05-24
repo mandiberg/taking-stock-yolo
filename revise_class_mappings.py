@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-default_path = "/Users/michaelmandiberg/Documents/yolo/mask_facial_cucumber_etc_mar27"
+default_path = "/Users/michaelmandiberg/Documents/yolo/reprocess/calculator_good"
 # default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
 # LOCAL_CLASS_NAMES = {
@@ -46,24 +46,73 @@ default_path = "/Users/michaelmandiberg/Documents/yolo/mask_facial_cucumber_etc_
 #     10: "Tulip"
 # }
 
+# LOCAL_CLASS_NAMES = {
+#     0: "Avocado_half",
+#     1: "Chestpiece",
+#     2: "Cucumber",
+#     3: "Eyepatch",
+#     4: "Facial",
+#     5: "Headphones",
+#     6: "Kiwi",
+#     7: "Lemon_slice",
+#     8: "Mask",
+#     9: "Masquerade_mask",
+#     10: "Sheetmask",
+#     11: "Sleepmask",
+#     12: "Stethoscope",
+#     13: "Valentine"
+# }  
+
 LOCAL_CLASS_NAMES = {
-    0: "Avocado_half",
-    1: "Chestpiece",
-    2: "Cucumber",
-    3: "Eyepatch",
-    4: "Facial",
-    5: "Headphones",
-    6: "Kiwi",
-    7: "Lemon_slice",
-    8: "Mask",
-    9: "Masquerade_mask",
-    10: "Sheetmask",
-    11: "Sleepmask",
-    12: "Stethoscope",
-    13: "Valentine"
-}  
-
-
+    0: "Avocado half",
+    1: "Bag",
+    2: "Bitcoin",
+    3: "Boxing gloves",
+    4: "Chestpiece",
+    5: "Cigarette",
+    6: "Clipboard",
+    7: "Creditcard",
+    8: "Cucumber",
+    9: "Daffodil",
+    10: "Daisy",
+    11: "Dumbbell",
+    12: "Eyeglasses",
+    13: "Eyepatch",
+    14: "Facial",
+    15: "Flag",
+    16: "Gift",
+    17: "Groceries",
+    18: "Gun",
+    19: "Headphones",
+    20: "Hydrangea",
+    21: "Iris",
+    22: "Kiwi",
+    23: "Lemon slice",
+    24: "Lily",
+    25: "Lisianthus",
+    26: "Mask",
+    27: "Masquerade mask",
+    28: "Money",
+    29: "Orchid",
+    30: "Peony",
+    31: "Picture frame",
+    32: "Piggybank",
+    33: "Pistol",
+    34: "Playing cards",
+    35: "Rifle",
+    36: "Rose",
+    37: "Salad",
+    38: "Sheetmask",
+    39: "Sign",
+    40: "Sleepmask",
+    41: "Stethoscope",
+    42: "Sunflower",
+    43: "Tablet",
+    44: "Tulip",
+    45: "Valentine",
+    46: "Vape",
+    47: "Calculator",
+}
 
 # Mapping from class name to COCO class ID
 COCO_CLASS_IDS = {
@@ -106,9 +155,17 @@ COCO_CLASS_IDS = {
     "Cucumber": 116,
     "Kiwi": 117,
     "Lemon_slice": 118,
-    "Avocado_half": 119
+    "Avocado_half": 119,
+    "Eyeglasses": 120,
+    "Cigarette": 121,
+    "Vape": 122,
+    "Boxing_gloves": 123,
+    "Tablet": 124,
+    "Picture_frame": 125,
+    "Playing_cards": 126,
+    "Calculator": 127,
+    "Megaphone": 128,
 }
-
 
 
 

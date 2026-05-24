@@ -1,0 +1,236 @@
+<View>
+  <Image name="image" value="$image"/>
+  <RectangleLabels name="label" toName="image">
+    <Label value="Malaysia" background="#E53935"/>
+    <Label value="Pride" background="#8E24AA"/>
+    <Label value="India" background="#1E88E5"/>
+    <Label value="Ukraine" background="#00ACC1"/>
+    <Label value="Brazil" background="#43A047"/>
+    <Label value="Checkered Flag" background="#FB8C00"/>
+    <Label value="United Kingdom" background="#3949AB"/>
+    <Label value="Canada" background="#F4511E"/>
+    <Label value="European Union" background="#00897B"/>
+    <Label value="United Nations" background="#6D4C41"/>
+    <Label value="United States of America" background="#D81B60"/>
+    <Label value="Germany" background="#5E35B1"/>
+    <Label value="Russian Federation" background="#7CB342"/>
+    <!-- Medium priority -->
+    <Label value="Peru" background="#4C78A8"/>
+    <Label value="France" background="#59A14F"/>
+    <Label value="China" background="#9C755F"/>
+    <Label value="Italy" background="#76B7B2"/>
+    <Label value="Jamaica" background="#EDC948"/>
+    <Label value="Israel" background="#B07AA1"/>
+    <Label value="Slovenia" background="#86BCB6"/>
+    <Label value="Spain" background="#A0CBE8"/>
+    <Label value="North Korea" background="#8CD17D"/>
+    <Label value="Greece" background="#F1CE63"/>
+    <Label value="Liberia" background="#D4A6C8"/>
+    <Label value="Australia" background="#4C78A8"/>
+    <Label value="Turkey" background="#59A14F"/>
+    <Label value="Pakistan" background="#9C755F"/>
+    <Label value="Switzerland" background="#76B7B2"/>
+    <Label value="Poland" background="#EDC948"/>
+    <Label value="Belarus" background="#B07AA1"/>
+    <Label value="Mexico" background="#86BCB6"/>
+    <Label value="Ireland" background="#A0CBE8"/>
+    <Label value="Argentina" background="#8CD17D"/>
+    <!-- Low priority -->
+    <Label value="Afghanistan" background="#DCE6F2"/>
+    <Label value="Albania" background="#E2EBD8"/>
+    <Label value="Algeria" background="#EAE2F1"/>
+    <Label value="American Samoa" background="#F2E9DD"/>
+    <Label value="Andorra" background="#DCEFEA"/>
+    <Label value="Angola" background="#E9EDF7"/>
+    <Label value="Anguilla" background="#F0E8F3"/>
+    <Label value="Antigua and Barbuda" background="#EAF0E2"/>
+    <Label value="Armenia" background="#EDEDED"/>
+    <Label value="Aruba" background="#E3EEF6"/>
+    <Label value="Austria" background="#DCE6F2"/>
+    <Label value="Azerbaijan" background="#E2EBD8"/>
+    <Label value="Bahamas" background="#EAE2F1"/>
+    <Label value="Bahrain" background="#F2E9DD"/>
+    <Label value="Bangladesh" background="#DCEFEA"/>
+    <Label value="Barbados" background="#E9EDF7"/>
+    <Label value="Belgium" background="#F0E8F3"/>
+    <Label value="Belize" background="#EAF0E2"/>
+    <Label value="Benin" background="#EDEDED"/>
+    <Label value="Bermuda" background="#E3EEF6"/>
+    <Label value="Bhutan" background="#DCE6F2"/>
+    <Label value="Bolivia" background="#E2EBD8"/>
+    <Label value="Bosnia" background="#EAE2F1"/>
+    <Label value="Botswana" background="#F2E9DD"/>
+    <Label value="British Virgin Islands" background="#DCEFEA"/>
+    <Label value="Brunei" background="#E9EDF7"/>
+    <Label value="Bulgaria" background="#F0E8F3"/>
+    <Label value="Burkina Faso" background="#EAF0E2"/>
+    <Label value="Burundi" background="#EDEDED"/>
+    <Label value="Cambodia" background="#E3EEF6"/>
+    <Label value="Cameroon" background="#DCE6F2"/>
+    <Label value="Cape Verde" background="#E2EBD8"/>
+    <Label value="Cayman Islands" background="#EAE2F1"/>
+    <Label value="Central African Republic" background="#F2E9DD"/>
+    <Label value="Chad" background="#DCEFEA"/>
+    <Label value="Chile" background="#E9EDF7"/>
+    <Label value="Christmas Island" background="#F0E8F3"/>
+    <Label value="Colombia" background="#EAF0E2"/>
+    <Label value="Comoros" background="#EDEDED"/>
+    <Label value="Cook Islands" background="#E3EEF6"/>
+    <Label value="Costa Rica" background="#DCE6F2"/>
+    <Label value="Croatia" background="#E2EBD8"/>
+    <Label value="Cuba" background="#EAE2F1"/>
+    <Label value="Cyprus" background="#F2E9DD"/>
+    <Label value="Czech Republic" background="#DCEFEA"/>
+    <Label value="Democratic Republic of the Congo" background="#E9EDF7"/>
+    <Label value="Denmark" background="#F0E8F3"/>
+    <Label value="Djibouti" background="#EAF0E2"/>
+    <Label value="Dominica" background="#EDEDED"/>
+    <Label value="Dominican Republic" background="#E3EEF6"/>
+    <Label value="Ecuador" background="#DCE6F2"/>
+    <Label value="Egypt" background="#E2EBD8"/>
+    <Label value="El Salvador" background="#EAE2F1"/>
+    <Label value="Equatorial Guinea" background="#F2E9DD"/>
+    <Label value="Eritrea" background="#DCEFEA"/>
+    <Label value="Estonia" background="#E9EDF7"/>
+    <Label value="Ethiopia" background="#F0E8F3"/>
+    <Label value="Falkland Islands" background="#EAF0E2"/>
+    <Label value="Faroe Islands" background="#EDEDED"/>
+    <Label value="Fiji" background="#E3EEF6"/>
+    <Label value="Finland" background="#DCE6F2"/>
+    <Label value="French Polynesia" background="#E2EBD8"/>
+    <Label value="Gabon" background="#EAE2F1"/>
+    <Label value="Gambia" background="#F2E9DD"/>
+    <Label value="Georgia" background="#DCEFEA"/>
+    <Label value="Ghana" background="#E9EDF7"/>
+    <Label value="Gibraltar" background="#F0E8F3"/>
+    <Label value="Greenland" background="#EAF0E2"/>
+    <Label value="Grenada" background="#EDEDED"/>
+    <Label value="Guam" background="#E3EEF6"/>
+    <Label value="Guatemala" background="#DCE6F2"/>
+    <Label value="Guinea" background="#E2EBD8"/>
+    <Label value="Guinea Bissau" background="#EAE2F1"/>
+    <Label value="Guyana" background="#F2E9DD"/>
+    <Label value="Haiti" background="#DCEFEA"/>
+    <Label value="Honduras" background="#E9EDF7"/>
+    <Label value="Hong Kong" background="#F0E8F3"/>
+    <Label value="Hungary" background="#EAF0E2"/>
+    <Label value="Iceland" background="#EDEDED"/>
+    <Label value="Indonesia" background="#E3EEF6"/>
+    <Label value="Iran" background="#DCE6F2"/>
+    <Label value="Iraq" background="#E2EBD8"/>
+    <Label value="Ivory Coast" background="#EAE2F1"/>
+    <Label value="Japan" background="#F2E9DD"/>
+    <Label value="Jordan" background="#DCEFEA"/>
+    <Label value="Kazakhstan" background="#E9EDF7"/>
+    <Label value="Kenya" background="#F0E8F3"/>
+    <Label value="Kiribati" background="#EAF0E2"/>
+    <Label value="Kuwait" background="#EDEDED"/>
+    <Label value="Kyrgyzstan" background="#E3EEF6"/>
+    <Label value="Laos" background="#DCE6F2"/>
+    <Label value="Latvia" background="#E2EBD8"/>
+    <Label value="Lebanon" background="#EAE2F1"/>
+    <Label value="Lesotho" background="#F2E9DD"/>
+    <Label value="Libya" background="#DCEFEA"/>
+    <Label value="Liechtenstein" background="#E9EDF7"/>
+    <Label value="Lithuania" background="#F0E8F3"/>
+    <Label value="Luxembourg" background="#EAF0E2"/>
+    <Label value="Macao" background="#EDEDED"/>
+    <Label value="Macedonia" background="#E3EEF6"/>
+    <Label value="Madagascar" background="#DCE6F2"/>
+    <Label value="Malawi" background="#E2EBD8"/>
+    <Label value="Maldives" background="#EAE2F1"/>
+    <Label value="Mali" background="#F2E9DD"/>
+    <Label value="Malta" background="#DCEFEA"/>
+    <Label value="Marshall Islands" background="#E9EDF7"/>
+    <Label value="Mauritania" background="#F0E8F3"/>
+    <Label value="Mauritius" background="#EAF0E2"/>
+    <Label value="Micronesia" background="#EDEDED"/>
+    <Label value="Moldova" background="#E3EEF6"/>
+    <Label value="Monaco" background="#DCE6F2"/>
+    <Label value="Mongolia" background="#E2EBD8"/>
+    <Label value="Montenegro" background="#EAE2F1"/>
+    <Label value="Montserrat" background="#F2E9DD"/>
+    <Label value="Morocco" background="#DCEFEA"/>
+    <Label value="Mozambique" background="#E9EDF7"/>
+    <Label value="Myanmar" background="#F0E8F3"/>
+    <Label value="Namibia" background="#EAF0E2"/>
+    <Label value="Nauru" background="#EDEDED"/>
+    <Label value="Nepal" background="#E3EEF6"/>
+    <Label value="Netherlands" background="#DCE6F2"/>
+    <Label value="Netherlands Antilles" background="#E2EBD8"/>
+    <Label value="New Zealand" background="#EAE2F1"/>
+    <Label value="Nicaragua" background="#F2E9DD"/>
+    <Label value="Niger" background="#DCEFEA"/>
+    <Label value="Nigeria" background="#E9EDF7"/>
+    <Label value="Niue" background="#F0E8F3"/>
+    <Label value="Norfolk Island" background="#EAF0E2"/>
+    <Label value="Norway" background="#EDEDED"/>
+    <Label value="Oman" background="#E3EEF6"/>
+    <Label value="Others" background="#DCE6F2"/>
+    <Label value="Palau" background="#E2EBD8"/>
+    <Label value="Panama" background="#EAE2F1"/>
+    <Label value="Papua New Guinea" background="#F2E9DD"/>
+    <Label value="Paraguay" background="#DCEFEA"/>
+    <Label value="Philippines" background="#E9EDF7"/>
+    <Label value="Pitcairn Islands" background="#F0E8F3"/>
+    <Label value="Portugal" background="#EAF0E2"/>
+    <Label value="Puerto Rico" background="#EDEDED"/>
+    <Label value="Qatar" background="#E3EEF6"/>
+    <Label value="Republic of the Congo" background="#DCE6F2"/>
+    <Label value="Romania" background="#E2EBD8"/>
+    <Label value="Rwanda" background="#EAE2F1"/>
+    <Label value="Saint Kitts and Nevis" background="#F2E9DD"/>
+    <Label value="Saint Lucia" background="#DCEFEA"/>
+    <Label value="Saint Pierre" background="#E9EDF7"/>
+    <Label value="Saint Vicent and the Grenadines" background="#F0E8F3"/>
+    <Label value="Samoa" background="#EAF0E2"/>
+    <Label value="San Marino" background="#EDEDED"/>
+    <Label value="Sao Tome and Principe" background="#E3EEF6"/>
+    <Label value="Saudi Arabia" background="#DCE6F2"/>
+    <Label value="Senegal" background="#E2EBD8"/>
+    <Label value="Serbia" background="#EAE2F1"/>
+    <Label value="Serbia and Montenegro" background="#F2E9DD"/>
+    <Label value="Seychelles" background="#DCEFEA"/>
+    <Label value="Sierra Leone" background="#E9EDF7"/>
+    <Label value="Singapore" background="#F0E8F3"/>
+    <Label value="Slovakia" background="#EAF0E2"/>
+    <Label value="Soloman Islands" background="#EDEDED"/>
+    <Label value="Somalia" background="#E3EEF6"/>
+    <Label value="South Africa" background="#DCE6F2"/>
+    <Label value="South Georgia" background="#E2EBD8"/>
+    <Label value="South Korea" background="#EAE2F1"/>
+    <Label value="South Sudan" background="#F2E9DD"/>
+    <Label value="Sri Lanka" background="#DCEFEA"/>
+    <Label value="Sudan" background="#E9EDF7"/>
+    <Label value="Suriname" background="#F0E8F3"/>
+    <Label value="Swaziland" background="#EAF0E2"/>
+    <Label value="Sweden" background="#EDEDED"/>
+    <Label value="Syria" background="#E3EEF6"/>
+    <Label value="Taiwan" background="#DCE6F2"/>
+    <Label value="Tajikistan" background="#E2EBD8"/>
+    <Label value="Tanzania" background="#EAE2F1"/>
+    <Label value="Thailand" background="#F2E9DD"/>
+    <Label value="Tibet" background="#DCEFEA"/>
+    <Label value="Timor Leste" background="#E9EDF7"/>
+    <Label value="Togo" background="#F0E8F3"/>
+    <Label value="Tonga" background="#EAF0E2"/>
+    <Label value="Trinidad and Tobago" background="#EDEDED"/>
+    <Label value="Tunisia" background="#E3EEF6"/>
+    <Label value="Turkmenistan" background="#DCE6F2"/>
+    <Label value="Turks and Caicos Islands" background="#E2EBD8"/>
+    <Label value="Tuvalu" background="#EAE2F1"/>
+    <Label value="UAE" background="#F2E9DD"/>
+    <Label value="Uganda" background="#DCEFEA"/>
+    <Label value="Uruguay" background="#E9EDF7"/>
+    <Label value="US Virgin Islands" background="#F0E8F3"/>
+    <Label value="Uzbekistan" background="#EAF0E2"/>
+    <Label value="Vanuatu" background="#EDEDED"/>
+    <Label value="Vatican City" background="#E3EEF6"/>
+    <Label value="Venezuela" background="#DCE6F2"/>
+    <Label value="Vietnam" background="#E2EBD8"/>
+    <Label value="Wallis and Futuna" background="#EAE2F1"/>
+    <Label value="Yemen" background="#F2E9DD"/>
+    <Label value="Zambia" background="#DCEFEA"/>
+    <Label value="Zimbabwe" background="#E9EDF7"/>
+  </RectangleLabels>
+</View>
