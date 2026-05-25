@@ -1,7 +1,13 @@
 path: /Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset
 train: images/train
 val: images/val
-nc: 2
+nc: 8
 names:
-  0: 127_calculator
-  1: 93_clipboard
+  0: 124_Tablet
+  1: 135_Computer_monitor
+  2: 134_Book
+  3: 127_calculator
+  4: 93_clipboard
+  5: 133_Remote_control
+  6: 136_Laptop
+  7: 137_Phone_handheld

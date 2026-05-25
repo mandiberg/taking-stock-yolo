@@ -6,11 +6,12 @@ from pathlib import Path
 
 import fiftyone.zoo as foz
 
+from class_map_utils import load_class_records
+
 
 # Toggle this for small, fast local pulls.
 TESTING_MODE = True
 LIMIT = 1000
-DEFAULT_TARGET_CLASSES = ["Calculator", "Flag", "Glasses", "Sunglasses", "Tablet computer", "Salad", "Drill (Tool)", "Camera", "Binoculars", "Microphone", "Remote control", "Corded phone", "Book", "Computer monitor", "Laptop", "Mobile phone"]
 
 DEFAULT_SPLITS = ["train", "validation"]
 DEFAULT_SEED = 42
@@ -24,8 +25,23 @@ def parse_args():
     parser.add_argument(
         "--classes",
         type=str,
-        default=",".join(DEFAULT_TARGET_CLASSES),
-        help="Comma-separated Open Images class names",
+        default="",
+        help=(
+            "Comma-separated Open Images class names. "
+            "If omitted, classes are sourced from custom_class_map.json"
+        ),
+    )
+    parser.add_argument(
+        "--use-custom-map",
+        dest="use_custom_map",
+        action="store_true",
+        help="Use canonical and alias names from custom_class_map.json when --classes is omitted",
+    )
+    parser.add_argument(
+        "--no-use-custom-map",
+        dest="use_custom_map",
+        action="store_false",
+        help="Require explicit --classes and do not auto-load class names from custom map",
     )
     parser.add_argument(
         "--output-dir",
@@ -69,11 +85,37 @@ def parse_args():
         default=None,
         help="Optional Open Images max_samples for each split load",
     )
-    parser.set_defaults(testing_mode=TESTING_MODE)
+    parser.set_defaults(testing_mode=TESTING_MODE, use_custom_map=True)
     return parser.parse_args()
 
 
-def resolve_target_classes(requested_classes):
+def classes_from_custom_map():
+    names = []
+    for row in load_class_records():
+        canonical = str(row.get("name", "")).strip()
+        if canonical:
+            names.append(canonical)
+
+        aliases = row.get("aliases", [])
+        if isinstance(aliases, list):
+            for alias in aliases:
+                alias_text = str(alias).strip()
+                if alias_text:
+                    names.append(alias_text)
+
+    ordered_unique = []
+    seen = set()
+    for name in names:
+        key = name.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        ordered_unique.append(name)
+
+    return ordered_unique
+
+
+def resolve_target_classes(requested_classes, strict=True):
     probe = foz.load_zoo_dataset(
         "open-images-v7",
         split="validation",
@@ -92,13 +134,27 @@ def resolve_target_classes(requested_classes):
         else:
             missing.append(cls)
 
-    if missing:
+    if missing and strict:
         raise ValueError(
             "Open Images classes not found: "
             f"{missing}. Check exact class names in Open Images taxonomy."
         )
 
-    return resolved
+    return resolved, missing
+
+
+def print_class_resolution_report(requested_classes, resolved_classes, missing_classes):
+    print("=== Class Resolution Report ===")
+    print(f"Requested names: {len(requested_classes)}")
+    print(f"Matched Open Images names: {len(resolved_classes)}")
+    print(f"Skipped (not in Open Images): {len(missing_classes)}")
+
+    if missing_classes:
+        preview_limit = 100
+        preview = ", ".join(missing_classes[:preview_limit])
+        if len(missing_classes) > preview_limit:
+            preview += ", ..."
+        print(f"Skipped preview: {preview}")
 
 
 def build_candidates(datasets, target_classes):
@@ -189,15 +245,39 @@ def write_yolo_dataset(selected_samples, output_dir, target_classes):
 
 def main():
     args = parse_args()
-    target_classes = [c.strip() for c in args.classes.split(",") if c.strip()]
+    explicit_classes = [c.strip() for c in args.classes.split(",") if c.strip()]
     source_splits = [s.strip() for s in args.splits.split(",") if s.strip()]
 
-    if not target_classes:
-        raise ValueError("No classes specified. Use --classes.")
     if not source_splits:
         raise ValueError("No source splits specified. Use --splits.")
 
-    resolved_classes = resolve_target_classes(target_classes)
+    used_custom_map = False
+    if explicit_classes:
+        target_classes = explicit_classes
+    elif args.use_custom_map:
+        target_classes = classes_from_custom_map()
+        used_custom_map = True
+    else:
+        raise ValueError("No classes specified. Use --classes or enable --use-custom-map.")
+
+    if not target_classes:
+        raise ValueError("No target classes resolved from inputs.")
+
+    resolved_classes, missing_classes = resolve_target_classes(
+        target_classes,
+        strict=not used_custom_map,
+    )
+
+    print_class_resolution_report(
+        requested_classes=target_classes,
+        resolved_classes=resolved_classes,
+        missing_classes=missing_classes,
+    )
+
+    if used_custom_map and missing_classes:
+        print("Note: skipped names came from custom_class_map.json")
+    if not resolved_classes:
+        raise RuntimeError("No target classes matched Open Images taxonomy after filtering.")
 
     max_samples_per_split = args.max_samples_per_split
     if args.testing_mode and max_samples_per_split is None:
@@ -207,6 +287,7 @@ def main():
     print("=== Open Images Download Config ===")
     print(f"Testing mode: {args.testing_mode}")
     print(f"Per-class limit: {args.limit if args.testing_mode else 'disabled'}")
+    print(f"Class source: {'custom_class_map.json' if used_custom_map else '--classes'}")
     print(f"Target classes: {resolved_classes}")
     print(f"Source splits: {source_splits}")
     print(f"max_samples_per_split: {max_samples_per_split}")
@@ -244,7 +325,12 @@ def main():
                 class_datasets.append((split, ds))
                 print(f"Loaded {len(ds)} samples from {split} for class '{cls_name}'")
 
-            class_candidates = build_candidates(class_datasets, [cls_name])
+            # Keep all target-class detections for selected images so downstream routing
+            # can place the same image into all relevant class folders.
+            class_candidates = build_candidates(class_datasets, resolved_classes)
+            class_candidates = [
+                sample for sample in class_candidates if cls_name in sample["classes_present"]
+            ]
             random.Random(args.seed + cls_index).shuffle(class_candidates)
             take_n = min(args.limit, len(class_candidates))
             class_selected = class_candidates[:take_n]

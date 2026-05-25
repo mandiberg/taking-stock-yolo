@@ -10,7 +10,7 @@ from pathlib import Path
 
 from class_map_utils import resolve_class_name_to_id
 
-default_path = "/Users/michaelmandiberg/Documents/yolo/reprocess/calculator_good"
+default_path = "/Users/michaelmandiberg/Documents/yolo/reprocess/relabel_these93"
 # default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
 # LOCAL_CLASS_NAMES = {

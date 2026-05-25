@@ -20,6 +20,8 @@ By default it runs as a dry run. Use --apply to write files.
 from __future__ import annotations
 
 import argparse
+import csv
+import re
 import shutil
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -37,6 +39,49 @@ class TargetClass:
     global_id: int
     folder_name: str
     canonical_name: str
+
+
+def extract_uid_candidates(value: str) -> list[str]:
+    """Extract likely UID tokens from a CSV cell or filename-like value."""
+    text = value.strip().strip('"').strip("'").lower()
+    if not text:
+        return []
+
+    base = Path(text).name
+    stem = Path(base).stem
+
+    # Prefer long hex substrings like Open Images IDs.
+    hex_hits = re.findall(r"[0-9a-f]{12,}", stem)
+    if hex_hits:
+        return sorted(set(hex_hits))
+
+    # Fallback: long alphanumeric tokens if IDs are not strictly hex.
+    token_hits = re.findall(r"[a-z0-9]{12,}", stem)
+    return sorted(set(token_hits))
+
+
+def load_excluded_uids(exclude_csv: Path | None) -> set[str]:
+    if exclude_csv is None:
+        return set()
+    if not exclude_csv.exists():
+        raise FileNotFoundError(f"exclude.csv not found: {exclude_csv}")
+
+    uids: set[str] = set()
+    with exclude_csv.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            for cell in row:
+                for uid in extract_uid_candidates(cell):
+                    uids.add(uid)
+
+    return uids
+
+
+def stem_contains_excluded_uid(stem: str, excluded_uids: set[str]) -> bool:
+    if not excluded_uids:
+        return False
+    s = stem.lower()
+    return any(uid in s for uid in excluded_uids)
 
 
 def make_folder_name(class_id: int, canonical_name: str) -> str:
@@ -169,6 +214,7 @@ def route(
     mappings: list[TargetClass],
     apply: bool,
     overwrite: bool,
+    excluded_uids: set[str] | None = None,
 ) -> None:
     images_dir = staging_dir / "images"
     labels_dir = staging_dir / "labels"
@@ -210,10 +256,17 @@ def route(
     write_ops = 0
     skip_existing = 0
     merged_label_files = 0
+    excluded_files = 0
+
+    excluded_uids = excluded_uids or set()
 
     for label_path in label_files:
         files_scanned += 1
         stem = label_path.stem
+        if stem_contains_excluded_uid(stem, excluded_uids):
+            excluded_files += 1
+            continue
+
         image_path = find_image_for_stem(images_dir, stem)
         if image_path is None:
             images_missing += 1
@@ -290,6 +343,7 @@ def route(
     print(f"Files scanned: {files_scanned}")
     print(f"Missing images for labels: {images_missing}")
     print(f"Malformed label files: {malformed_files}")
+    print(f"Excluded by UID: {excluded_files}")
     print(f"Write operations: {write_ops}")
     print(f"Skipped existing outputs: {skip_existing}")
     print(f"Merged existing label files: {merged_label_files}")
@@ -343,6 +397,17 @@ def parse_args() -> argparse.Namespace:
         help="Root where per-class folders will be written",
     )
     parser.add_argument(
+        "--exclude-csv",
+        type=Path,
+        default=None,
+        help=(
+            "Optional CSV of images to exclude by UID. "
+            "UID matching is substring-based against filename stems, so "
+            "train_<uid>.jpg and train_<uid>.txt are both excluded. "
+            "If omitted, the script auto-uses <staging-dir>/exclude.csv when present."
+        ),
+    )
+    parser.add_argument(
         "--source-class",
         action="append",
         default=[],
@@ -367,6 +432,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    exclude_csv = args.exclude_csv
+    if exclude_csv is None:
+        candidate = args.staging_dir / "exclude.csv"
+        if candidate.exists():
+            exclude_csv = candidate
+
+    excluded_uids = load_excluded_uids(exclude_csv)
+    if exclude_csv is not None:
+        print(f"Loaded {len(excluded_uids)} excluded UIDs from {exclude_csv}")
+
     if args.source_class:
         mappings = build_targets_from_source_classes(args.source_class)
     else:
@@ -393,6 +468,7 @@ def main() -> None:
         mappings=mappings,
         apply=args.apply,
         overwrite=args.overwrite,
+        excluded_uids=excluded_uids,
     )
 
 
