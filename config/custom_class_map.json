@@ -61,7 +61,7 @@
     {"id": 134, "name": "Book"},
     {"id": 135, "name": "Computer_monitor", "aliases": ["Computer monitor"]},
     {"id": 136, "name": "Laptop"},
-    {"id": 137, "name": "Phone_handheld", "aliases": ["Mobile phone", "Telephone", "Phone"]},
+    {"id": 137, "name": "Phone_handheld", "aliases": ["Mobile phone"]},
     {"id": 139, "name": "Corded_phone", "aliases": ["Corded phone"]}
   ]
 }

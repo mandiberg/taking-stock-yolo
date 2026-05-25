@@ -1,6 +1,7 @@
 import argparse
 import random
 import shutil
+import time
 from pathlib import Path
 
 import fiftyone.zoo as foz
@@ -8,12 +9,12 @@ import fiftyone.zoo as foz
 
 # Toggle this for small, fast local pulls.
 TESTING_MODE = True
-LIMIT = 200
-DEFAULT_TARGET_CLASSES = ["Calculator", "Flag", "Glasses", "Sunglasses", "Tablet computer", "Salad", "Drill (Tool)", "Camera", "Binoculars", "Microphone", "Remote control", "Corded phone", "Book", "Computer monitor", "Laptop", "Mobile phone", "Telephone"]
+LIMIT = 1000
+DEFAULT_TARGET_CLASSES = ["Calculator", "Flag", "Glasses", "Sunglasses", "Tablet computer", "Salad", "Drill (Tool)", "Camera", "Binoculars", "Microphone", "Remote control", "Corded phone", "Book", "Computer monitor", "Laptop", "Mobile phone"]
 
 DEFAULT_SPLITS = ["train", "validation"]
 DEFAULT_SEED = 42
-DEFAULT_OUTPUT_DIR = "yolo_dataset2/openimages_raw"
+DEFAULT_OUTPUT_DIR = Path.home() / "Documents/YOLO_Training_Data/openimages_raw"
 
 
 def parse_args():
@@ -201,7 +202,7 @@ def main():
     max_samples_per_split = args.max_samples_per_split
     if args.testing_mode and max_samples_per_split is None:
         # Pull a larger candidate pool per class, then sample per-class downstream.
-        max_samples_per_split = max(1000, args.limit * 20)
+        max_samples_per_split = max(1000, args.limit * 2)
 
     print("=== Open Images Download Config ===")
     print(f"Testing mode: {args.testing_mode}")
@@ -211,6 +212,9 @@ def main():
     print(f"max_samples_per_split: {max_samples_per_split}")
     print(f"Output dir: {args.output_dir}")
 
+    # Prevent FiftyOne from reusing stale per-split datasets across different classes.
+    run_tag = str(int(time.time()))
+
     if args.testing_mode:
         # In testing mode, sample each class independently up to LIMIT.
         selected_by_path = {}
@@ -219,8 +223,13 @@ def main():
         for cls_index, cls_name in enumerate(resolved_classes):
             print(f"\nSampling class '{cls_name}'...")
             class_datasets = []
+            safe_cls = "".join(ch if ch.isalnum() else "_" for ch in cls_name.lower())
             for split in source_splits:
                 print(f"Loading split '{split}' for class '{cls_name}'...")
+                dataset_name = (
+                    f"open-images-v7-{split}-{safe_cls}-"
+                    f"{max_samples_per_split}-{args.seed + cls_index}-{run_tag}"
+                )
                 ds = foz.load_zoo_dataset(
                     "open-images-v7",
                     split=split,
@@ -230,6 +239,7 @@ def main():
                     shuffle=True,
                     seed=args.seed + cls_index,
                     max_samples=max_samples_per_split,
+                    dataset_name=dataset_name,
                 )
                 class_datasets.append((split, ds))
                 print(f"Loaded {len(ds)} samples from {split} for class '{cls_name}'")

@@ -135,6 +135,34 @@ def find_image_for_stem(images_dir: Path, stem: str) -> Path | None:
     return None
 
 
+def merge_label_lines(existing_path: Path, new_lines: list[str], overwrite: bool) -> tuple[list[str], bool]:
+    """
+    Returns (final_lines, changed).
+    If overwrite=True, final_lines is exactly new_lines.
+    If overwrite=False and file exists, merges + deduplicates lines.
+    """
+    if overwrite or not existing_path.exists():
+        return new_lines, True
+
+    existing_lines = [
+        line.strip()
+        for line in existing_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+    merged = list(existing_lines)
+    seen = set(existing_lines)
+    changed = False
+    for line in new_lines:
+        if line in seen:
+            continue
+        merged.append(line)
+        seen.add(line)
+        changed = True
+
+    return merged, changed
+
+
 def route(
     staging_dir: Path,
     output_root: Path,
@@ -181,6 +209,7 @@ def route(
 
     write_ops = 0
     skip_existing = 0
+    merged_label_files = 0
 
     for label_path in label_files:
         files_scanned += 1
@@ -204,12 +233,26 @@ def route(
                 continue
             grouped[target].append((x, y, w, h))
 
-        for target, boxes in grouped.items():
-            if not boxes:
-                continue
+        if not grouped:
+            continue
 
-            class_image_counts[target.global_id] += 1
+        # Build one complete mapped label set for this image.
+        all_lines: list[str] = []
+        for target, boxes in grouped.items():
             class_box_counts[target.global_id] += len(boxes)
+            for x, y, w, h in boxes:
+                all_lines.append(f"{target.global_id} {x:.6f} {y:.6f} {w:.6f} {h:.6f}")
+
+        # Deduplicate lines so repeated mappings do not produce duplicate boxes.
+        all_lines = sorted(set(all_lines))
+
+        # Route this image into each triggered target folder, but write full labels each time.
+        routed_targets: dict[int, TargetClass] = {}
+        for target in grouped:
+            routed_targets[target.global_id] = target
+
+        for global_id, target in sorted(routed_targets.items()):
+            class_image_counts[global_id] += 1
 
             out_dir = output_root / target.folder_name
             out_images = out_dir / "images"
@@ -218,22 +261,27 @@ def route(
             out_image_path = out_images / image_path.name
             out_label_path = out_labels / f"{stem}.txt"
 
-            if out_image_path.exists() or out_label_path.exists():
-                if not overwrite:
-                    skip_existing += 1
-                    continue
-
             if apply:
                 out_images.mkdir(parents=True, exist_ok=True)
                 out_labels.mkdir(parents=True, exist_ok=True)
 
-                shutil.copy2(image_path, out_image_path)
-                lines = [
-                    f"{target.global_id} {x:.6f} {y:.6f} {w:.6f} {h:.6f}"
-                    for x, y, w, h in boxes
-                ]
-                out_label_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-                write_ops += 1
+                if overwrite or not out_image_path.exists():
+                    shutil.copy2(image_path, out_image_path)
+
+                final_lines, changed = merge_label_lines(
+                    existing_path=out_label_path,
+                    new_lines=all_lines,
+                    overwrite=overwrite,
+                )
+
+                if out_label_path.exists() and not overwrite and changed:
+                    merged_label_files += 1
+
+                if overwrite or changed or not out_label_path.exists():
+                    out_label_path.write_text("\n".join(final_lines) + "\n", encoding="utf-8")
+                    write_ops += 1
+                else:
+                    skip_existing += 1
 
     print("=== Open Images Route Summary ===")
     print(f"Mode: {'APPLY' if apply else 'DRY RUN'}")
@@ -244,6 +292,7 @@ def route(
     print(f"Malformed label files: {malformed_files}")
     print(f"Write operations: {write_ops}")
     print(f"Skipped existing outputs: {skip_existing}")
+    print(f"Merged existing label files: {merged_label_files}")
 
     print("Local class map from classes.txt:")
     for idx, name in enumerate(staging_classes):
@@ -284,7 +333,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--staging-dir",
         type=Path,
-        default=Path("yolo_dataset2/openimages_raw"),
+        default=Path.home() / "Documents/YOLO_Training_Data/openimages_raw",
         help="Path containing images/, labels/, classes.txt from Open Images export",
     )
     parser.add_argument(
