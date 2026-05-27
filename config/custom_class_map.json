@@ -47,7 +47,7 @@
     {"id": 120, "name": "None"},
     {"id": 121, "name": "Cigarette"},
     {"id": 122, "name": "Vape"},
-    {"id": 123, "name": "Boxing_gloves"},
+    {"id": 123, "name": "Book_custom"},
     {"id": 124, "name": "Tablet", "aliases": ["Tablet computer"]},
     {"id": 125, "name": "Picture_frame"},
     {"id": 126, "name": "Playing_cards"},
@@ -56,12 +56,15 @@
     {"id": 129, "name": "Drill_tool", "aliases": ["Drill (Tool)", "Drill"]},
     {"id": 130, "name": "Camera"},
     {"id": 131, "name": "Binoculars"},
-    {"id": 132, "name": "Microphone"},
-    {"id": 133, "name": "Remote_control", "aliases": ["Remote control"]},
-    {"id": 134, "name": "Book"},
-    {"id": 135, "name": "Computer_monitor", "aliases": ["Computer monitor"]},
-    {"id": 136, "name": "Laptop"},
+    {"id": 132, "name": "Computer_monitor", "aliases": ["Computer monitor"]},
+    {"id": 133, "name": "Laptop_custom"},
+    {"id": 134, "name": "Microphone"},
+    {"id": 135, "name": "Remote_control_custom", "aliases": ["Remote control"]},
+    {"id": 136, "name": "Keybaord_custom"},
     {"id": 137, "name": "Phone_handheld", "aliases": ["Mobile phone"]},
     {"id": 139, "name": "Corded_phone", "aliases": ["Corded phone"]}
+    {"id": 140, "name": "Boxing_gloves"},
   ]
 }
+
+
