@@ -1,0 +1,65 @@
+<View>
+  <Image name="image" value="$image"/>
+  <RectangleLabels name="label" toName="image">
+    <Label value="Sign" background="#E6194B"/>
+    <Label value="Gift" background="#3CB44B"/>
+    <Label value="Money" background="#4363D8"/>
+    <Label value="Bag" background="#F58231"/>
+    <Label value="Valentine" background="#911EB4"/>
+    <Label value="Salad" background="#42D4F4"/>
+    <Label value="Dumbbell" background="#F032E6"/>
+    <Label value="Flag" background="#BFEF45"/>
+    <Label value="Groceries" background="#FABED4"/>
+    <Label value="Chestpiece" background="#469990"/>
+    <Label value="Stethoscope" background="#DCBEFF"/>
+    <Label value="Glasses" background="#9A6324"/>
+    <Label value="Headphones" background="#FFFAC8"/>
+    <Label value="Clipboard" background="#800000" hotkey="d"/>
+    <Label value="Piggybank" background="#AAFFC3"/>
+    <Label value="Creditcard" background="#808000"/>
+    <Label value="Bitcoin" background="#FFD8B1"/>
+    <Label value="Rose" background="#000075"/>
+    <Label value="Lily" background="#A9A9A9"/>
+    <Label value="Iris" background="#FFFFFF"/>
+    <Label value="Tulip" background="#E53935"/>
+    <Label value="Lisianthus" background="#43A047"/>
+    <Label value="Orchid" background="#1E88E5"/>
+    <Label value="Peony" background="#FB8C00"/>
+    <Label value="Sunflower" background="#8E24AA"/>
+    <Label value="Daisy" background="#00ACC1"/>
+    <Label value="Daffodil" background="#F4511E"/>
+    <Label value="Hydrangea" background="#6D4C41"/>
+    <Label value="Pistol" background="#00897B"/>
+    <Label value="Rifle" background="#3949AB"/>
+    <Label value="Mask" background="#D81B60"/>
+    <Label value="Facial" background="#039BE5"/>
+    <Label value="Sheetmask" background="#7CB342"/>
+    <Label value="Eyepatch" background="#FFB300"/>
+    <Label value="Sleepmask" background="#5E35B1"/>
+    <Label value="Masquerade_mask" background="#546E7A"/>
+    <Label value="Cucumber" background="#C0CA33"/>
+    <Label value="Kiwi" background="#E53935"/>
+    <Label value="Lemon_slice" background="#00BCD4"/>
+    <Label value="Avocado_half" background="#FF7043"/>
+    <Label value="None" background="#26A69A"/>
+    <Label value="Cigarette" background="#EF9A9A"/>
+    <Label value="Vape" background="#CE93D8"/>
+    <Label value="Book_custom" background="#80DEEA" hotkey="b"/>
+    <Label value="Tablet" background="#A5D6A7" hotkey="t"/>
+    <Label value="Picture_frame" background="#FFF176"/>
+    <Label value="Playing_cards" background="#FFCC80"/>
+    <Label value="Calculator" background="#E6194B" hotkey="c"/>
+    <Label value="Megaphone" background="#3CB44B"/>
+    <Label value="Drill_tool" background="#4363D8"/>
+    <Label value="Camera" background="#F58231"/>
+    <Label value="Binoculars" background="#911EB4"/>
+    <Label value="Computer_monitor" background="#42D4F4" hotkey="v"/>
+    <Label value="Laptop_custom" background="#F032E6" hotkey="l"/>
+    <Label value="Microphone" background="#BFEF45"/>
+    <Label value="Remote_control_custom" background="#FABED4"/>
+    <Label value="Keybaord_custom" background="#469990"/>
+    <Label value="Phone_handheld" background="#DCBEFF" hotkey="p"/>
+    <Label value="Corded_phone" background="#9A6324"/>
+    <Label value="Boxing_gloves" background="#FFFAC8"/>
+  </RectangleLabels>
+</View>

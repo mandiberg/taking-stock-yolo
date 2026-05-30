@@ -1,41 +1,50 @@
 path: /Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset
 train: images/train
 val: images/val
-nc: 36
+nc: 45
 names:
   0: 109_rifle
   1: 89_chestpiece
-  2: 117_kiwi
-  3: 113_eyepatch
-  4: 108_pistol
-  5: 100_tulip
-  6: 116_cucumber
-  7: 114_sleepmask
-  8: 88_groceries
-  9: 112_sheetmask
-  10: 118_citrus
-  11: 90_stethoscope
-  12: 92_headphones
-  13: 107_hydrangea
-  14: 84_valentine
-  15: 97_rose
-  16: 83_bag
-  17: 81_gift
-  18: 104_sunflower
-  19: 82_money
-  20: 98_lily
-  21: 94_piggybank
-  22: 95_creditcard
-  23: 86_dumbbell
-  24: 119_avocado
-  25: 106_daffodil
-  26: 80_sign
-  27: 102_orchid
-  28: 110_mask
-  29: 96_bitcoin
-  30: 101_lisianthus
-  31: 99_iris
-  32: 105_daisy
-  33: 103_peony
-  34: 115_Masquerade_mask
-  35: 111_facial
+  2: 133_laptop_custom
+  3: 117_kiwi
+  4: 113_eyepatch
+  5: 108_pistol
+  6: 124_Tablet
+  7: 100_tulip
+  8: 116_cucumber
+  9: 135_Remote_control_custom
+  10: 114_sleepmask
+  11: 88_groceries
+  12: 112_sheetmask
+  13: 118_citrus
+  14: 90_stethoscope
+  15: 87_flag
+  16: 92_headphones
+  17: 107_hydrangea
+  18: 127_calculator
+  19: 84_valentine
+  20: 97_rose
+  21: 83_bag
+  22: 81_gift
+  23: 104_sunflower
+  24: 82_money
+  25: 98_lily
+  26: 94_piggybank
+  27: 95_creditcard
+  28: 93_clipboard
+  29: 123_books
+  30: 86_dumbbell
+  31: 132_Computer_monitor
+  32: 119_avocado
+  33: 106_daffodil
+  34: 80_sign
+  35: 102_orchid
+  36: 110_mask
+  37: 96_bitcoin
+  38: 101_lisianthus
+  39: 99_iris
+  40: 105_daisy
+  41: 103_peony
+  42: 115_Masquerade_mask
+  43: 111_facial
+  44: 137_Phone_handheld

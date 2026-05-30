@@ -6,12 +6,12 @@
     },
     "id_strategy": "dense_yolo_ids_by_coco_category_id_order",
     "total_coco_categories": 226,
-    "included_classes": 228,
+    "included_classes": 229,
     "excluded_categories": 1,
     "notes": [
       "Applied user-provided special/new-case mapping rules.",
       "Cyprus_Northern excluded.",
-      "Manual new classes created for Tibet/Others/European_Union/Pride/United_Nations.",
+      "Manual new classes created for Tibet/Others/European_Union/Pride/United_Nations/Checkered_Flag.",
       "Serbia_and_Montenegro mapped to Serbia.",
       "Netherlands_Antilles mapped to Bonaire Sint Eustatius and Saba."
     ]
@@ -4098,6 +4098,19 @@
       "coco_name": "United_Nations",
       "display_name": "United Nations",
       "normalized_name": "united nations",
+      "location_id": null,
+      "code_numeric": null,
+      "code_alpha3": null,
+      "code_alpha2": null
+    },
+    {
+      "include": true,
+      "yolo_class_id": 228,
+      "source": "manual_new_class",
+      "coco_category_id": null,
+      "coco_name": "Checkered_Flag",
+      "display_name": "Checkered Flag",
+      "normalized_name": "checkered flag",
       "location_id": null,
       "code_numeric": null,
       "code_alpha3": null,

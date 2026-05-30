@@ -6,10 +6,17 @@ Maps local class IDs to COCO dataset class IDs based on class names.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
-default_path = "/Users/michaelmandiberg/Documents/yolo/mask_facial_cucumber_etc_mar27"
-# default_path = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
+from class_map_utils import resolve_class_name_to_id
+
+YOLO_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/Relabeled_johnmarotta_april2026/"
+WALK_FOLDERS = True
+SUBFOLDER_PATH = None
+
+# YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/reprocess/relabel_these93"
+# YOLO_ROOT = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
 # LOCAL_CLASS_NAMES = {
 #     0: "Bag",
@@ -47,82 +54,165 @@ default_path = "/Users/michaelmandiberg/Documents/yolo/mask_facial_cucumber_etc_
 # }
 
 LOCAL_CLASS_NAMES = {
-    0: "Avocado_half",
-    1: "Chestpiece",
-    2: "Cucumber",
-    3: "Eyepatch",
-    4: "Facial",
-    5: "Headphones",
-    6: "Kiwi",
-    7: "Lemon_slice",
-    8: "Mask",
-    9: "Masquerade_mask",
-    10: "Sheetmask",
-    11: "Sleepmask",
-    12: "Stethoscope",
-    13: "Valentine"
-}  
-
-
-
-# Mapping from class name to COCO class ID
-COCO_CLASS_IDS = {
-    "Sign": 80,
-    "Gift": 81,
-    "Money": 82,
-    "Bag": 83,
-    "Valentine": 84,
-    "Salad": 85, # not in use
-    "Dumbbell": 86,
-    "Flag": 87,
-    "Groceries": 88,
-    "Chestpiece": 89,
-    "Stethoscope": 90,
-    "Gun": 91,
-    "Headphones": 92,
-    "Clipboard": 93, # not in use
-    "Piggybank": 94,
-    "Creditcard": 95,
-    "Bitcoin": 96,
-    "Rose": 97,
-    "Lily": 98,
-    "Iris": 99,
-    "Tulip": 100,
-    "Lisianthus": 101,
-    "Orchid": 102,
-    "Peony": 103,
-    "Sunflower": 104,
-    "Daisy": 105,
-    "Daffodil": 106,
-    "Hydrangea": 107,
-    "Pistol": 108,
-    "Rifle": 109,
-    "Mask": 110,
-    "Facial": 111,
-    "Sheetmask": 112,
-    "Eyepatch": 113,
-    "Sleepmask": 114,
-    "Masquerade_mask": 115,
-    "Cucumber": 116,
-    "Kiwi": 117,
-    "Lemon_slice": 118,
-    "Avocado_half": 119
+    0: "Avocado half",
+    1: "Bag",
+    2: "Bitcoin",
+    3: "Boxing gloves",
+    4: "Chestpiece",
+    5: "Cigarette",
+    6: "Clipboard",
+    7: "Creditcard",
+    8: "Cucumber",
+    9: "Daffodil",
+    10: "Daisy",
+    11: "Dumbbell",
+    12: "Eyeglasses",
+    13: "Eyepatch",
+    14: "Facial",
+    15: "Flag",
+    16: "Gift",
+    17: "Groceries",
+    18: "Gun",
+    19: "Headphones",
+    20: "Hydrangea",
+    21: "Iris",
+    22: "Kiwi",
+    23: "Lemon slice",
+    24: "Lily",
+    25: "Lisianthus",
+    26: "Mask",
+    27: "Masquerade mask",
+    28: "Money",
+    29: "Orchid",
+    30: "Peony",
+    31: "Picture frame",
+    32: "Piggybank",
+    33: "Pistol",
+    34: "Playing cards",
+    35: "Rifle",
+    36: "Rose",
+    37: "Salad",
+    38: "Sheetmask",
+    39: "Sign",
+    40: "Sleepmask",
+    41: "Stethoscope",
+    42: "Sunflower",
+    43: "Tablet",
+    44: "Tulip",
+    45: "Valentine",
+    46: "Vape"
 }
 
 
 
+# LOCAL_CLASS_NAMES = {
 
-# Build mapping from local class ID to COCO class ID
-LOCAL_TO_COCO = {
-    local_id: COCO_CLASS_IDS[LOCAL_CLASS_NAMES[local_id]]
-    for local_id in LOCAL_CLASS_NAMES
-    if LOCAL_CLASS_NAMES[local_id] in COCO_CLASS_IDS
-}
+#     0: "Avocado_half",
+#     1: "Bag",
+#     2: "Binoculars",
+#     3: "Bitcoin",
+#     4: "Book_custom",
+#     5: "Boxing_gloves",
+#     6: "Calculator",
+#     7: "Camera",
+#     8: "Chestpiece",
+#     9: "Cigarette",
+#     10: "Clipboard",
+#     11: "Computer_monitor",
+#     12: "Corded_phone",
+#     13: "Creditcard",
+#     14: "Cucumber",
+#     15: "Daffodil",
+#     16: "Daisy",
+#     17: "Drill_tool",
+#     18: "Dumbbell",
+#     19: "Eyepatch",
+#     20: "Facial",
+#     21: "Flag",
+#     22: "Gift",
+#     23: "Glasses",
+#     24: "Groceries",
+#     25: "Headphones",
+#     26: "Hydrangea",
+#     27: "Iris",
+#     28: "Keybaord_custom",
+#     29: "Kiwi",
+#     30: "Laptop_custom",
+#     31: "Lemon_slice",
+#     32: "Lily",
+#     33: "Lisianthus",
+#     34: "Mask",
+#     35: "Masquerade_mask",
+#     36: "Megaphone",
+#     37: "Microphone",
+#     38: "Money",
+#     39: "None",
+#     40: "Orchid",
+#     41: "Peony",
+#     42: "Phone_handheld",
+#     43: "Picture_frame",
+#     44: "Piggybank",
+#     45: "Pistol",
+#     46: "Playing_cards",
+#     47: "Remote_control_custom",
+#     48: "Rifle",
+#     49: "Rose",
+#     50: "Salad",
+#     51: "Sheetmask",
+#     52: "Sign",
+#     53: "Sleepmask",
+#     54: "Stethoscope",
+#     55: "Sunflower",
+#     56: "Tablet",
+#     57: "Tulip",
+#     58: "Valentine",
+#     59: "Vape" 
+ 
+# }
 
-def remap_labels(base_dir: Path) -> None:
+LOCAL_TO_COCO = {}
+UNMAPPED_LOCAL = {}
+for local_id, local_name in LOCAL_CLASS_NAMES.items():
+    resolved = resolve_class_name_to_id(local_name)
+    if resolved is None:
+        UNMAPPED_LOCAL[local_id] = local_name
+        continue
+    LOCAL_TO_COCO[local_id] = resolved
+
+
+def is_hidden_name(name: str) -> bool:
+    return name.startswith(".")
+
+
+def discover_dataset_folders(yolo_root: Path) -> list[Path]:
+    dataset_folders: list[Path] = []
+    for name in sorted(os.listdir(yolo_root)):
+        if is_hidden_name(name):
+            continue
+
+        dataset_path = yolo_root / name
+        if not dataset_path.is_dir():
+            continue
+
+        target_base = dataset_path / SUBFOLDER_PATH if SUBFOLDER_PATH else dataset_path
+        labels_dir = target_base / "labels"
+        if labels_dir.is_dir():
+            dataset_folders.append(target_base)
+        else:
+            print(f"Skipping {dataset_path}: missing labels at {labels_dir}")
+
+    return dataset_folders
+
+
+def remap_labels(base_dir: Path) -> dict[str, int]:
     labels_dir = base_dir / "labels"
     if not labels_dir.exists():
         raise FileNotFoundError(f"Labels directory not found: {labels_dir}")
+
+    if UNMAPPED_LOCAL:
+        print("Warning: some LOCAL_CLASS_NAMES entries are not in custom_class_map.json")
+        for local_id, local_name in sorted(UNMAPPED_LOCAL.items()):
+            print(f"  local {local_id}: {local_name}")
 
     total_files = 0
     changed_files = 0
@@ -163,18 +253,50 @@ def remap_labels(base_dir: Path) -> None:
     print(f"Boxes remapped: {remapped_boxes}")
     print(f"Boxes unmapped: {unmapped_boxes}")
 
+    return {
+        "files": total_files,
+        "changed": changed_files,
+        "remapped": remapped_boxes,
+        "unmapped": unmapped_boxes,
+    }
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Remap YOLO class IDs to COCO class IDs")
     parser.add_argument(
         "--base-dir",
         type=Path,
-        default=Path(default_path),
+        default=Path(YOLO_ROOT),
         help="Base dataset directory containing images/ and labels/",
     )
 
     args = parser.parse_args()
-    remap_labels(args.base_dir)
+
+    if WALK_FOLDERS:
+        yolo_root = args.base_dir
+        if not yolo_root.is_dir():
+            raise FileNotFoundError(f"YOLO_ROOT not found: {yolo_root}")
+
+        dataset_bases = discover_dataset_folders(yolo_root)
+        if not dataset_bases:
+            print("No valid dataset folders found.")
+            return
+
+        totals = {"files": 0, "changed": 0, "remapped": 0, "unmapped": 0}
+        for dataset_base in dataset_bases:
+            print(f"\n=== Processing dataset path: {dataset_base} ===")
+            stats = remap_labels(dataset_base)
+            for key in totals:
+                totals[key] += stats[key]
+
+        print("\nSummary:")
+        print(f"Datasets processed: {len(dataset_bases)}")
+        print(f"Files scanned: {totals['files']}")
+        print(f"Files changed: {totals['changed']}")
+        print(f"Boxes remapped: {totals['remapped']}")
+        print(f"Boxes unmapped: {totals['unmapped']}")
+    else:
+        remap_labels(args.base_dir)
 
 
 if __name__ == "__main__":

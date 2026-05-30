@@ -20,7 +20,6 @@ Outputs a JSON report `yolo_check_report.json` in the dataset root.
 import argparse
 import json
 import math
-import os
 from pathlib import Path
 from PIL import Image, UnidentifiedImageError
 
@@ -155,11 +154,49 @@ def scan_dataset(root: str, verbose=False):
     return report
 
 
+def find_associated_images(images_dir: Path, stem: str) -> list[Path]:
+    if not images_dir.exists():
+        return []
+    return sorted(path for path in images_dir.glob(f'{stem}.*') if path.is_file())
+
+
+def delete_corrupt_labels_and_images(root: Path, report: dict) -> dict[str, int]:
+    deleted_labels = 0
+    deleted_images = 0
+
+    for split, info in report['splits'].items():
+        if 'error' in info:
+            continue
+
+        images_dir = root / 'images' / split
+        corrupt_label_paths = sorted(info['corrupt_labels'].keys())
+
+        for label_path_str in corrupt_label_paths:
+            label_path = Path(label_path_str)
+            if label_path.exists():
+                label_path.unlink()
+                deleted_labels += 1
+                print(f"Deleted corrupt label: {label_path}")
+
+            for image_path in find_associated_images(images_dir, label_path.stem):
+                if image_path.exists():
+                    image_path.unlink()
+                    deleted_images += 1
+                    print(f"Deleted associated image: {image_path}")
+
+    return {'deleted_labels': deleted_labels, 'deleted_images': deleted_images}
+
+
 def main():
     parser = argparse.ArgumentParser(description='Check YOLO dataset images/labels for corruption and format issues.')
     parser.add_argument('dataset_root', nargs='?', default='yolo_dataset', help='Path to YOLO dataset root (default: yolo_dataset)')
     parser.add_argument('--out', '-o', help='Path to write JSON report (default: <dataset_root>/yolo_check_report.json)')
     parser.add_argument('--verbose', '-v', action='store_true')
+    parser.add_argument(
+        '--delete-corrupt',
+        action='store_true',
+        help='Delete corrupt label files and any same-stem image files in the matching split.',
+    )
     args = parser.parse_args()
 
     root = Path(args.dataset_root).expanduser().resolve()
@@ -188,6 +225,13 @@ def main():
         print("corrupt_labels:")
         for label, problems in info['corrupt_labels'].items():
             print(f"  {label}: {', '.join(problems)}")
+
+    if args.delete_corrupt:
+        deletion_summary = delete_corrupt_labels_and_images(root, report)
+        print(
+            'Deletion summary: '
+            f"labels={deletion_summary['deleted_labels']}, images={deletion_summary['deleted_images']}"
+        )
 
 if __name__ == '__main__':
     main()

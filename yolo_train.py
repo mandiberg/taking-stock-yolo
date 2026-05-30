@@ -44,7 +44,8 @@ TaskAlignedAssigner.get_box_metrics = _mps_fixed_get_box_metrics
 # --- End workaround ---
 
 # Load pretrained model
-model = YOLO('yolo26x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
+model = YOLO('yolov8x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
+# model2 = YOLO('yolov8x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
 # model2 = YOLO('yolo26x-objv1-150.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
 # DATA_FOLDER = "/Users/michael.mandiberg/Documents/takingstock_production/labeled_images_nov19"
     
@@ -65,7 +66,11 @@ def freeze_layer(trainer):
     print(f"{num_freeze} layers are freezed.")
 
 model.add_callback("on_train_start", freeze_layer)
+# model2.add_callback("on_train_start", freeze_layer)
 # model.train(data="./dataset.yaml")
+
+# if MBP use:
+    # batch=16,        # Fixed small batch for low-memory debugging on 32GB RAM
 
 
 # Train
@@ -77,19 +82,19 @@ results = model.train(
     name='takingstock_test_c45_yolo26x',  # Experiment name
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
-    workers=8,        # ✅ CPU workers, not GPU cores
+    workers=2,        # Lower host RAM pressure while debugging MPS crashes
     project='/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
     exist_ok=True,  # Overwrite existing experiment with same name
     augment=True,
-    cache='ram'   # ⭐ Enable RAM caching
+    cache=False    # Avoid large RAM spikes during debugging
 )
 
 # results2 = model2.train(
-#     data="/Users/michael.mandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset_mask/data.yaml",  # absolute path
-#     epochs=200,
+#     data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset2/data.yaml",  # absolute path
+#     epochs=100,
 #     imgsz=640,
 #     batch=16,       # Reduce if you get memory errors
-#     name='takingstock_mask_v5_yolo26xObj',  # Experiment name
+#     name='takingstock_glassescards_v0_yolov8x',  # Experiment name
 #     patience=20,    # Early stopping
 #     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
 #     workers=8,        # ✅ CPU workers, not GPU cores

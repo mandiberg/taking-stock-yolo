@@ -1,0 +1,7 @@
+path: /Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset2
+train: images/train
+val: images/val
+nc: 2
+names:
+  0: 126_playing_cards
+  1: 120_eyeglasses

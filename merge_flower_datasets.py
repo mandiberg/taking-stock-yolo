@@ -138,10 +138,10 @@ def process_flower_datasets(source_root, output_folder_name="101_flowers"):
                     # Invalid class ID, skip line
                     continue
                 
-                # Check if class ID is in flower range (97-103)
-                if 97 <= class_id <= 103:
-                    # Remap to 101
-                    parts[0] = '101'
+                # Check if class ID is in flower range (0-103)
+                if 0 <= class_id <= 103:
+                    # Remap to 126
+                    parts[0] = '126'
                     remapped_lines_count += 1
                     remapped_lines += 1
                 else:
@@ -184,7 +184,7 @@ if __name__ == '__main__':
     import sys
     
     # Default path
-    default_path = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/flowers_individual"
+    default_path = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/unify_these"
     
     # Allow custom path as argument
     source_path = sys.argv[1] if len(sys.argv) > 1 else default_path

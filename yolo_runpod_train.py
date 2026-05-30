@@ -11,14 +11,41 @@ import yaml
 
 '''
 how to get files to the runpod machine:
-scp -P 46597 -i ~/.ssh/id_ed25519 ~/documents/GitHub/taking-stock-yolo/yolo_runpod_train.py root@38.65.239.12:/root/yolo_runpod_train.py
+scp -P 32990 -i ~/.ssh/id_ed25519 ~/documents/GitHub/taking-stock-yolo/yolo_check_dataset.py root@38.80.152.148:/root/yolo_check_dataset.py
 
+zip goes to workspace on network storage
+scp -P 32990 -i ~/.ssh/id_ed25519 ~/documents/GitHub/taking-stock-yolo/yolo_dataset.zip root@38.80.152.148:/workspace/yolo_dataset.zip
+
+ssh root@38.80.152.148 -p 32990 -i ~/.ssh/id_ed25519
+
+MOVE DATASET FROM WORK OT ROOT
+unzip on network storage: 
+cd /workspace
+unzip yolo_dataset.zip
+cp -r /workspace/yolo_dataset /root/yolo_dataset
+
+MOVE MODEL BACK TO WORKSPACE
+cp -r /root/runs/detect/runs/takingstock_c36_v1_yolo26x/ /workspace/takingstock_c36_v1_yolo26x/
+
+DOWNLOAD MODEL
+scp -r -P 10162 -i ~/.ssh/id_ed25519 root@203.57.40.220:/workspace/runs/detect/runs/takingstock_c36_v1_yolo26x ~/documents/GitHub/taking-stock-yolo/runs/takingstock_c36_v1_yolo26x
+
+
+-- erase cache files after a failed run
+pkill -f yolo_runpod_train.py || true
+pkill -f ultralytics || true
+find /root/yolo_dataset -type f -name "*.npy" -delete
+find /root/yolo_dataset -type f -name "*.cache" -delete
+
+'''
+
+'''
+ENV setup
 
 apt update && apt install -y unzip
 python -m pip install --upgrade pip && python -m pip install --index-url https://download.pytorch.org/whl/cu124 torch==2.6.0 torchvision==0.21.0 && python -m pip install ultralytics==8.4.30 pyyaml
-'''
 
-'''
+
 tmux stuff
 
 apt update
@@ -41,6 +68,8 @@ tmux attach -t train
 Daily use:
 tmux new -s train
 python yolo_runpod_train.py 2>&1 | tee train.log
+python yolo_runpod_train.py --profile runpod_4x4090 2>&1 | tee train.log
+python yolo_runpod_train.py --pilot # for 3 epoch test
 
 Leave it running safely:
 Press Ctrl-b, then d
@@ -48,7 +77,6 @@ Press Ctrl-b, then d
 Come back later:
 tmux attach -t train
 '''
-
 
 # Profile-based defaults so you can switch pod configs with --profile.
 CONFIG_PROFILES = {
@@ -103,9 +131,44 @@ CONFIG_PROFILES = {
         "freeze": True,
         "augment": True,
     },
+    "runpod_4xh200_sxm": {
+        "model": "yolo26x.pt",
+        "data": "yolo_dataset/data.yaml",
+        "epochs": 200,
+        "imgsz": 640,
+        "batch": 32,
+        "name": "takingstock_c45_h200_4x_yolo26x",
+        "project": "runs",
+        "patience": 20,
+        "device": "0,1,2,3",
+        "workers": 24,
+        "cache": "disk",
+        "amp": True,
+        "cudnn": True,
+        "freeze": True,
+        "augment": True,
+    },
+    "runpod_8xh200_sxm": {
+        "model": "yolo26x.pt",
+        "data": "yolo_dataset/data.yaml",
+        "epochs": 200,
+        "imgsz": 640,
+        "batch": 64,
+        "name": "takingstock_c45_h200_8x_yolo26x",
+        "project": "runs",
+        "patience": 20,
+        "device": "0,1,2,3,4,5,6,7",
+        "workers": 32,
+        "cache": "disk",
+        "amp": True,
+        "cudnn": True,
+        "freeze": True,
+        "augment": True,
+    },
 }
 
-DEFAULT_PROFILE = "runpod_4x4090"
+ACTIVE_PROFILE = "runpod_4xh200_sxm"
+DEFAULT_PROFILE = ACTIVE_PROFILE
 
 
 def train_once(model, *, data, epochs, imgsz, batch, name, patience, device, workers, project, augment, cache, amp):
@@ -222,17 +285,57 @@ def parse_args():
     augment_group.add_argument("--augment", dest="augment", action="store_true", help="Enable augmentations.")
     augment_group.add_argument("--no-augment", dest="augment", action="store_false", help="Disable augmentations.")
 
+    parser.add_argument(
+        "--pilot",
+        action="store_true",
+        help="Run a short pilot using the selected profile before committing to the full overnight run.",
+    )
+    parser.add_argument(
+        "--pilot-epochs",
+        type=int,
+        default=3,
+        help="Epoch count for pilot mode.",
+    )
+
     parser.set_defaults(amp=None, cudnn=None, freeze=None, augment=None)
     return parser.parse_args()
 
 
 def resolve_config(args):
+    if DEFAULT_PROFILE not in CONFIG_PROFILES:
+        raise ValueError(f"ACTIVE_PROFILE '{DEFAULT_PROFILE}' is not defined in CONFIG_PROFILES")
+
     cfg = dict(CONFIG_PROFILES[args.profile])
     for key in cfg:
         value = getattr(args, key, None)
         if value is not None:
             cfg[key] = value
     return cfg
+
+
+def describe_cuda_environment() -> None:
+    if not torch.cuda.is_available():
+        print("CUDA available: False")
+        return
+
+    print("CUDA available: True")
+    print(f"CUDA device count: {torch.cuda.device_count()}")
+    print(f"Torch CUDA version: {torch.version.cuda}")
+    for index in range(torch.cuda.device_count()):
+        print(f"CUDA device {index}: {torch.cuda.get_device_name(index)}")
+
+
+def resolve_run_settings(cfg, *, pilot: bool, pilot_epochs: int):
+    run_name = cfg["name"]
+    run_epochs = cfg["epochs"]
+    run_patience = cfg["patience"]
+
+    if pilot:
+        run_epochs = max(1, min(run_epochs, pilot_epochs))
+        run_patience = max(1, min(run_patience, run_epochs))
+        run_name = f"{run_name}_pilot"
+
+    return run_name, run_epochs, run_patience
 
 
 def normalize_data_yaml(data_path: Path) -> str:
@@ -272,6 +375,11 @@ def main():
 
     batch = int(cfg["batch"]) if str(cfg["batch"]).lstrip("-").isdigit() else cfg["batch"]
     cache = False if str(cfg["cache"]).lower() == "false" else cfg["cache"]
+    run_name, run_epochs, run_patience = resolve_run_settings(
+        cfg,
+        pilot=args.pilot,
+        pilot_epochs=args.pilot_epochs,
+    )
 
     model_path = Path(cfg["model"])
     data_path = Path(cfg["data"])
@@ -290,21 +398,29 @@ def main():
         torch.backends.cudnn.deterministic = False
 
     print(f"Profile: {args.profile}")
+    print(f"Active profile default: {DEFAULT_PROFILE}")
+    print(f"Pilot mode: {args.pilot}")
     print(f"Using device: {device}")
+    print(f"Resolved batch: {batch}")
+    print(f"Resolved workers: {cfg['workers']}")
     print(f"AMP enabled: {cfg['amp']}")
     print(f"cuDNN enabled: {torch.backends.cudnn.enabled}")
     print(f"Training data: {data_path.resolve() if data_path.exists() else data_path}")
     print(f"Saving runs to: {project_path.resolve()}")
+    print(f"Run name: {run_name}")
+    print(f"Run epochs: {run_epochs}")
+    print(f"Run patience: {run_patience}")
+    describe_cuda_environment()
 
     try:
         train_once(
             model,
             data=data_yaml_for_run,
-            epochs=cfg["epochs"],
+            epochs=run_epochs,
             imgsz=cfg["imgsz"],
             batch=batch,
-            name=cfg["name"],
-            patience=cfg["patience"],
+            name=run_name,
+            patience=run_patience,
             device=device,
             workers=cfg["workers"],
             project=str(project_path),
@@ -324,11 +440,11 @@ def main():
         train_once(
             model,
             data=data_yaml_for_run,
-            epochs=cfg["epochs"],
+            epochs=run_epochs,
             imgsz=cfg["imgsz"],
             batch=safe_batch,
-            name=cfg["name"],
-            patience=cfg["patience"],
+            name=run_name,
+            patience=run_patience,
             device=device,
             workers=0,
             project=str(project_path),
