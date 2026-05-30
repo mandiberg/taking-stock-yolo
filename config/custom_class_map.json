@@ -39,7 +39,7 @@
     {"id": 112, "name": "Sheetmask"},
     {"id": 113, "name": "Eyepatch"},
     {"id": 114, "name": "Sleepmask"},
-    {"id": 115, "name": "Masquerade_mask"},
+    {"id": 115, "name": "Masquerade mask"},
     {"id": 116, "name": "Cucumber"},
     {"id": 117, "name": "Kiwi"},
     {"id": 118, "name": "Lemon_slice"},
@@ -62,8 +62,8 @@
     {"id": 135, "name": "Remote_control_custom", "aliases": ["Remote control"]},
     {"id": 136, "name": "Keybaord_custom"},
     {"id": 137, "name": "Phone_handheld", "aliases": ["Mobile phone"]},
-    {"id": 139, "name": "Corded_phone", "aliases": ["Corded phone"]}
-    {"id": 140, "name": "Boxing_gloves"},
+    {"id": 139, "name": "Corded_phone", "aliases": ["Corded phone"]},
+    {"id": 140, "name": "Boxing_gloves"}
   ]
 }
 

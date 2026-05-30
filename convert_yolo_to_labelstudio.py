@@ -6,9 +6,10 @@ import cv2
 from class_map_utils import get_id_to_name
 
 # 📌 CONFIG — adjust these
-YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/reprocess/"
-# YOLO_ROOT = "/Volumes/LaCie/test_output/label_studio_ready"
-WALK_FOLDERS = False
+# YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/reprocess/"
+YOLO_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images_reprocess/"
+WALK_FOLDERS = True
+SUBFOLDER_PATH = "test_output/review_refined_detections"
 
 # DATASET_FOLDER = "sort/relabel_these"
 DATASET_FOLDER = "relabel_these93_midzone"
@@ -43,7 +44,7 @@ def get_suppression_config(dataset_folder):
     return suppression_enabled, batch_class_id
 
 # Canonical classes are loaded from config/custom_class_map.json
-CLASSES = get_id_to_name(min_id=80, max_id=128)
+CLASSES = get_id_to_name(min_id=80, max_id=140)
 
 # CLASSES = {
 #     0: "Afghanistan",
@@ -278,6 +279,8 @@ CLASSES = get_id_to_name(min_id=80, max_id=128)
 # }
 
 def process_dataset(dataset_folder):
+    if SUBFOLDER_PATH:
+        dataset_folder = os.path.join(dataset_folder, SUBFOLDER_PATH)
     images_dir = os.path.join(YOLO_ROOT, dataset_folder, "images")
     labels_dir = os.path.join(YOLO_ROOT, dataset_folder, "labels")
     output_json = os.path.join(YOLO_ROOT, dataset_folder, "labelstudio_tasks.json")
@@ -289,10 +292,10 @@ def process_dataset(dataset_folder):
 
     tasks = []
     if not os.path.isdir(images_dir) or not os.path.isdir(labels_dir):
-        print(f"[WARN] Missing images/ or labels/ for dataset '{dataset_folder}'. Writing empty JSON.")
-        with open(output_json, "w") as f:
-            json.dump(tasks, f, indent=2)
-        print(f"Done! Label Studio tasks written to:\n  {output_json}")
+        print(f"[WARN] Missing images/ or labels/ for dataset '{dataset_folder}'.")
+        # with open(output_json, "w") as f:
+        #     json.dump(tasks, f, indent=2)
+        # print(f"Done! Label Studio tasks written to:\n  {output_json}")
         return 0
 
     for img_name in sorted(os.listdir(images_dir)):
@@ -397,6 +400,7 @@ def process_dataset(dataset_folder):
 def discover_dataset_folders(yolo_root):
     dataset_folders = []
     for name in sorted(os.listdir(yolo_root)):
+        print(f"Checking {name} in YOLO root...")
         if is_hidden_name(name):
             continue
         dataset_path = os.path.join(yolo_root, name)
@@ -404,7 +408,9 @@ def discover_dataset_folders(yolo_root):
             continue
         images_dir = os.path.join(dataset_path, "images")
         labels_dir = os.path.join(dataset_path, "labels")
-        if os.path.isdir(images_dir) and os.path.isdir(labels_dir):
+        if SUBFOLDER_PATH and os.path.isdir(images_dir):
+            dataset_folders.append(name)
+        elif os.path.isdir(images_dir) and os.path.isdir(labels_dir):
             dataset_folders.append(name)
         else:
             print(f"Skipping {name}: missing images/ or labels/")

@@ -7,7 +7,7 @@ from class_map_utils import get_id_to_name
 OUTPUT_XML_PATH = "nonmap_labelstudio_label_config.xml"
 
 # Classes are loaded from config/custom_class_map.json
-CLASSES = get_id_to_name(min_id=80, max_id=128)
+CLASSES = get_id_to_name(min_id=80, max_id=140)
 
 # 40 visually distinct, equal-weight colors — varied hue, consistent saturation/brightness
 FLAT_COLORS = [
@@ -22,7 +22,16 @@ FLAT_COLORS = [
     "#26A69A", "#EF9A9A", "#CE93D8", "#80DEEA", "#A5D6A7",
     "#FFF176", "#FFCC80",
 ]
+HOTKEYS = {
+    93: "d",
+    123: "b",
+    124: "t",
+    127: "c",
+    132: "v",
+    133: "l",
+    137: "p",
 
+}
 
 def build():
     all_classes = sorted(CLASSES.items())
@@ -33,9 +42,15 @@ def build():
     lines.append('  <RectangleLabels name="label" toName="image">')
 
     for i, (cid, name) in enumerate(all_classes):
-        label = name.replace("_", " ")
+        label = name
+        # label = name.replace("_", " ")
         color = FLAT_COLORS[i % len(FLAT_COLORS)]
-        lines.append(f'    <Label value="{escape(label)}" background="{color}"/>')
+        if cid in HOTKEYS:
+            line = f'    <Label value="{escape(label)}" background="{color}" hotkey="{HOTKEYS[cid]}"/>'
+        else:
+            line = f'    <Label value="{escape(label)}" background="{color}"/>'
+
+        lines.append(line)
 
     lines.append("  </RectangleLabels>")
     lines.append("</View>")
