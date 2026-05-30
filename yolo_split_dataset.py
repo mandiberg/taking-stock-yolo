@@ -72,6 +72,9 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
                     converted_lines.append(' '.join(parts) + '\n')
                 except Exception as e:
                     print(f"Error converting line '{line.strip()}' in {input_path}: {e}")
+        if not converted_lines:
+            print(f" ❌❌❌ Skipping empty label (no valid annotations after conversion): {input_path}")
+            return
         with open(output_path, 'w') as f:
             f.writelines(converted_lines)
     

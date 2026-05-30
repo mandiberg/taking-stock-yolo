@@ -1,5 +1,47 @@
 from ultralytics import YOLO
 import os
+import torch
+from ultralytics.utils.tal import TaskAlignedAssigner
+
+# --- Workaround for PyTorch MPS non-adjacent advanced indexing bug ---
+# pd_scores[ind[0], :, ind[1]] mixes advanced indices on dim 0 & 2 with a
+# basic slice on dim 1. On MPS (PyTorch 2.9.1) this produces inconsistent
+# output shapes, causing a shape mismatch RuntimeError in tal.py:195.
+# Fix: permute pd_scores so the two advanced indices become adjacent.
+def _mps_fixed_get_box_metrics(self, pd_scores, pd_bboxes, gt_labels, gt_bboxes, mask_gt):
+    na = pd_bboxes.shape[-2]
+    mask_gt = mask_gt.bool()  # b, max_num_obj, h*w
+    overlaps = torch.zeros([self.bs, self.n_max_boxes, na], dtype=pd_bboxes.dtype, device=pd_bboxes.device)
+    bbox_scores = torch.zeros([self.bs, self.n_max_boxes, na], dtype=pd_scores.dtype, device=pd_scores.device)
+
+    # PyTorch 2.9.1 MPS has two bugs in the original implementation:
+    #   1. Non-adjacent advanced indexing (pd_scores[ind0, :, ind1]) gives wrong shapes.
+    #   2. Boolean indexing on .expand()-ed (stride-0) tensors miscounts True elements.
+    # Fix: use nonzero() to convert mask_gt to explicit integer indices, then use
+    # all-adjacent integer indexing throughout — no boolean indexing, no expanded tensors.
+    mask_idx = mask_gt.nonzero(as_tuple=False)  # [N, 3]: columns = (batch, obj, anchor)
+    if mask_idx.numel() > 0:
+        b_idx   = mask_idx[:, 0]  # [N]
+        obj_idx = mask_idx[:, 1]  # [N]
+        anc_idx = mask_idx[:, 2]  # [N]
+
+        # Class label for each (batch, obj) pair → used to index the score dim
+        # gt_labels is float32 in Ultralytics; must cast to long before using as index
+        cls_idx = gt_labels.squeeze(-1)[b_idx, obj_idx].long()  # [N]
+
+        # pd_scores: [bs, na, nc] — simultaneous integer indexing on all 3 dims → [N]
+        bbox_scores[b_idx, obj_idx, anc_idx] = pd_scores[b_idx, anc_idx, cls_idx]
+
+        # pd_bboxes: [bs, na, 4], gt_bboxes: [bs, n_max_boxes, 4] → [N, 4] each
+        pd_boxes = pd_bboxes[b_idx, anc_idx]   # [N, 4]
+        gt_boxes = gt_bboxes[b_idx, obj_idx]   # [N, 4]
+        overlaps[b_idx, obj_idx, anc_idx] = self.iou_calculation(gt_boxes, pd_boxes)  # [N]
+
+    align_metric = bbox_scores.pow(self.alpha) * overlaps.pow(self.beta)
+    return align_metric, overlaps
+
+TaskAlignedAssigner.get_box_metrics = _mps_fixed_get_box_metrics
+# --- End workaround ---
 
 # Load pretrained model
 model = YOLO('yolo26x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
@@ -25,13 +67,14 @@ def freeze_layer(trainer):
 model.add_callback("on_train_start", freeze_layer)
 # model.train(data="./dataset.yaml")
 
+
 # Train
 results = model.train(
     data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml",  # absolute path
-    epochs=200,
+    epochs=100,
     imgsz=640,
     batch=-1,       # Reduce if you get memory errors
-    name='takingstock_comptest_yolo26x',  # Experiment name
+    name='takingstock_test_c45_yolo26x',  # Experiment name
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
     workers=8,        # ✅ CPU workers, not GPU cores
