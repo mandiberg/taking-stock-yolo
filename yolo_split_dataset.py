@@ -20,7 +20,7 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         int(source_class_id): int(yolo_id)
         for source_class_id, yolo_id in class_id_to_YOLOid.items()
     }
-    
+    print(f"Normalized class_id_to_YOLOid mapping: {normalized_class_id_to_YOLOid}")
     def convert_label_file(input_path, output_path, class_id_to_YOLOid):
         # print(f"mapping is {class_id_to_YOLOid}")
         """Read label file, convert class IDs to YOLO IDs, and write to output"""

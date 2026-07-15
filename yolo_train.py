@@ -44,7 +44,7 @@ TaskAlignedAssigner.get_box_metrics = _mps_fixed_get_box_metrics
 # --- End workaround ---
 
 # Load pretrained model
-model = YOLO('yolov8x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
+model = YOLO('yolo26x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
 # model2 = YOLO('yolov8x.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
 # model2 = YOLO('yolo26x-objv1-150.pt')  # Options: yolo26n.pt, yolo26s.pt, yolo26m.pt, yolo26x-objv1-150.pt
 # DATA_FOLDER = "/Users/michael.mandiberg/Documents/takingstock_production/labeled_images_nov19"
@@ -79,10 +79,10 @@ results = model.train(
     epochs=100,
     imgsz=640,
     batch=-1,       # Reduce if you get memory errors
-    name='takingstock_test_c45_yolo26x',  # Experiment name
+    name='takingstock_balls_v1_yolo26x',  # Experiment name
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
-    workers=2,        # Lower host RAM pressure while debugging MPS crashes
+    workers=8,        # Lower host RAM pressure while debugging MPS crashes
     project='/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/runs',  # Save to project directory
     exist_ok=True,  # Overwrite existing experiment with same name
     augment=True,

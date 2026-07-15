@@ -5,8 +5,8 @@ model = YOLO("/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/runs/ta
 
 # 2. Rerun evaluation on the Validation Set (Default behavior)
 print("--- Evaluating Validation Set ---")
-val_results = model.val(data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml", split="val")
+val_results = model.val(data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml", split="val", device='mps')
 
 # 3. Rerun evaluation on the Training Set 
 print("--- Evaluating Training Set ---")
-train_results = model.val(data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml", split="train")
+train_results = model.val(data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml", split="train", device='mps')
