@@ -63,7 +63,22 @@
     {"id": 136, "name": "Keybaord_custom"},
     {"id": 137, "name": "Phone_handheld", "aliases": ["Mobile phone"]},
     {"id": 139, "name": "Corded_phone", "aliases": ["Corded phone"]},
-    {"id": 140, "name": "Boxing_gloves"}
+    {"id": 140, "name": "Boxing_gloves"},
+    {"id": 141, "name": "Soccerball"},
+    {"id": 142, "name": "Basketball"},
+    {"id": 143, "name": "Football"},
+    {"id": 144, "name": "Volleyball"},
+    {"id": 145, "name": "Baseball"},
+    {"id": 146, "name": "Tennisball"},
+    {"id": 147, "name": "Weightball"},
+    {"id": 148, "name": "Discoball"},
+    {"id": 149, "name": "Beachball"},
+    {"id": 150, "name": "Yogaball"},
+    {"id": 151, "name": "Yogamat"},
+    {"id": 152, "name": "Golfball"},
+    {"id": 153, "name": "Tabletennisball"},
+    {"id": 154, "name": "Globe"}
+    
   ]
 }
 

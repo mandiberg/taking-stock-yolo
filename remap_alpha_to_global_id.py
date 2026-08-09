@@ -2,7 +2,7 @@ import os
 
 from class_map_utils import resolve_class_name_to_id
 
-FOLDER = "/Users/michael.mandiberg/Documents/YOLO_Training_Data/label_final steth"
+FOLDER = "/Users/michaelmandiberg/Documents/yolo/YogaMat_144"
 CLASSES_FILE = os.path.join(FOLDER, 'classes.txt')
 LABELS_FOLDER = os.path.join(FOLDER, 'labels')
 

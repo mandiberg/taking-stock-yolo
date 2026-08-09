@@ -25,11 +25,11 @@ unzip yolo_dataset.zip
 cp -r /workspace/yolo_dataset /root/yolo_dataset
 
 MOVE MODEL BACK TO WORKSPACE
-cp -r /root/runs/detect/runs/takingstock_c36_v1_yolo26x/ /workspace/takingstock_c36_v1_yolo26x/
+cp -r /root/runs/detect/runs/takingstock_c45_h200_4x_yolo26x/ /workspace/takingstock_c45_h200_4x_yolo26x/
 
 DOWNLOAD MODEL
-scp -r -P 10162 -i ~/.ssh/id_ed25519 root@203.57.40.220:/workspace/runs/detect/runs/takingstock_c36_v1_yolo26x ~/documents/GitHub/taking-stock-yolo/runs/takingstock_c36_v1_yolo26x
-
+scp -r -P 10162 -i ~/.ssh/id_ed25519 root@203.57.40.220:/workspace/runs/detect/runs/takingstock_c45_h200_4x_yolo26x ~/documents/GitHub/taking-stock-yolo/runs/takingstock_c45_h200_4x_yolo26x
+scp -r -P 32990 -i ~/.ssh/id_ed25519 root@38.80.152.148:/root/runs/detect/runs/takingstock_c45_h200_4x_yolo26x ~/documents/GitHub/taking-stock-yolo/runs/takingstock_c45_h200_4x_yolo26x
 
 -- erase cache files after a failed run
 pkill -f yolo_runpod_train.py || true

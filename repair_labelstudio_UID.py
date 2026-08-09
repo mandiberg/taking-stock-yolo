@@ -11,11 +11,12 @@ images/0f0febd2-0.79_43660298_YOLO_debug.jpg
 '''
 
 from pathlib import Path
+import re
 
 
-FOLDER = "/Users/michaelmandiberg/Documents/yolo/ClipBoards_Completed"
+FOLDER = "/Users/michaelmandiberg/Documents/yolo/Aug_7_189"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
-
+USE_FILENAMES_AS_IDS = True # permissive mode, for use with new undetected images
 
 def extract_uid(filename: str) -> str | None:
     parts = filename.split("_", 1)
@@ -89,9 +90,19 @@ def strip_leading_confidence_token(filename: str) -> str:
 
 def extract_image_id(filename: str) -> str | None:
     base = normalize_match_key(filename)
+    # print(f"extract_image_id: filename={filename}, base={base}")
     image_id = base.split("_", 1)[0]
     if image_id.isdigit():
         return image_id
+    elif USE_FILENAMES_AS_IDS:
+        # the hexadecimal UID prefix is 8 characters long, followed by a dash, e.g. 0f0febd2-0.79_43660298_YOLO_debug.txt 
+        hex_pattern = r"^[0-9a-fA-F]{8}-"
+
+        # use regex to remove the hexadecimal UID prefix if present
+        cleaned_base = re.sub(hex_pattern, "", base)
+        # take the first 65 characters of the cleaned base as the image_id
+        cleaned_base = cleaned_base[:65]
+        return cleaned_base
     return None
 
 
@@ -125,6 +136,18 @@ def maybe_rename_with_uid(target_path: Path, uid: str) -> bool:
     target_path.rename(new_path)
     return True
 
+def rename_label_with_imagepath(target_path: Path, image_stem: str) -> bool:
+    cleaned_name = strip_leading_confidence_token(target_path.name)
+    new_name = f"{image_stem}.txt"
+    new_path = target_path.with_name(new_name)
+
+    if new_path.exists():
+        print(f"Cannot rename {target_path.name} -> {new_name} (target exists)")
+        return False
+
+    print(f"Renaming {target_path.name} -> {new_name}")
+    target_path.rename(new_path)
+    return True
 
 def main():
     root = Path(FOLDER)
@@ -148,6 +171,7 @@ def main():
     print(f"Sample label base names: {list(labels_by_base.keys())[:5]}")
     print(f"Sample image base names: {list(images_by_base.keys())[:5]}")
     shared_bases = sorted(set(labels_by_base.keys()) & set(images_by_base.keys()))
+    print(f"Shared base names: {len(shared_bases)}")
 
     renamed_count = 0
     for base in shared_bases:
@@ -156,7 +180,7 @@ def main():
 
         label_uid = extract_uid(label_path.name)
         image_uid = extract_uid(image_path.name)
-
+        print(f"Processing base '{base}': label_uid={label_uid}, image_uid={image_uid}")
         if label_uid and not image_uid:
             if maybe_rename_with_uid(image_path, label_uid):
                 renamed_count += 1
@@ -168,6 +192,31 @@ def main():
                 "UID mismatch for base "
                 f"'{base}': label={label_uid}, image={image_uid}"
             )
+        elif USE_FILENAMES_AS_IDS and not label_uid and not image_uid:
+            print(f"Aggressive: '{base}' lacks UIDs, going to work with filenames for {label_path.name} and {image_path.name}; ")
+            if rename_label_with_imagepath(label_path, image_path.stem):
+                renamed_count += 1
+            
+    # find the label files that have no matching image file and use match them by partial names
+    labels_by_base_not_in_shared_bases = {base: path for base, path in labels_by_base.items() if base not in shared_bases}
+    images_by_base_not_in_shared_bases = {base: path for base, path in images_by_base.items() if base not in shared_bases}
+
+    print(f"Images with no matching label: {len(images_by_base_not_in_shared_bases)}")
+    for base, image_path in images_by_base_not_in_shared_bases.items():
+        print(f"  No matching label for image '{image_path.name}' (base '{base}')")
+        # search label_paths for a matching image base name
+        for base2, label_path in labels_by_base.items():
+            # print(f"    Checking label '{label_path.name}' (base '{base2}')")
+            if base in label_path.name:
+                print(f"    Found potential match: {label_path.name} (base '{base2}')")
+                if rename_label_with_imagepath(label_path, image_path.stem):
+                    renamed_count += 1
+                break
+
+    # # handle any label files that have no matching image file
+    # for base, label_path in labels_by_base.items():
+    #     if base not in images_by_base:
+    #         print(f"No matching image for label '{label_path.name}' (base '{base}')")
 
     print("=== UID Repair Summary ===")
     print(f"labels files: {len(label_files)}")

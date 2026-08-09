@@ -12,7 +12,12 @@ def _normalize_token(value: str) -> str:
 
 
 def load_class_records(class_map_path: Path | None = None) -> list[dict]:
-    path = class_map_path or DEFAULT_CLASS_MAP_PATH
+    # 1. Fall back to default path if None
+    raw_path = class_map_path or DEFAULT_CLASS_MAP_PATH
+    
+    # 2. Ensure it is a Path object, even if a string was passed
+    path = Path(raw_path) 
+    
     with path.open("r", encoding="utf-8") as f:
         payload = json.load(f)
 

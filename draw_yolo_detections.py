@@ -5,8 +5,9 @@ from pathlib import Path
 
 # ---- paths ----
 # DATASET_ROOT = "/Volumes/OWC52/segment_images_OWC4/test_output/sort/move_these"
-DATASET_ROOT = "/Users/michaelmandiberg/Downloads/project-6-at-2026-05-29-15-32-7de9086b"
+# DATASET_ROOT = "/Users/michaelmandiberg/Downloads/Sports_Batch"
 # DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images_reprocess_test/none_bag_groceries_flowers_money/test_output/review_refined_detections"
+DATASET_ROOT = "/Users/michaelmandiberg/Documents/yolo/weights_reintegrate/misc_weights"
 
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
@@ -94,6 +95,7 @@ def process_yolo_format():
         # Find corresponding label file: label filename contains image filename
         label_file = None
         for f in os.listdir(LABELS_DIR):
+            # file_name_no_ext = 
             if os.path.splitext(img_name)[0] in f:
                 label_file = os.path.join(LABELS_DIR, f)
                 break
