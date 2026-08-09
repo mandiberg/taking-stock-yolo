@@ -3,7 +3,7 @@ import os
 from class_map_utils import resolve_class_name_to_id
 
 '''
-    140_Boxing_gloves
+140_Boxing_gloves
 141_soccerball
 142_basketball
 143_football

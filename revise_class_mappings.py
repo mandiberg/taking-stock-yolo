@@ -2,6 +2,7 @@
 """Remap YOLO labels to COCO class IDs.
 
 Maps local class IDs to COCO dataset class IDs based on class names.
+
 """
 from __future__ import annotations
 
@@ -11,31 +12,29 @@ from pathlib import Path
 
 from class_map_utils import resolve_class_name_to_id
 
-YOLO_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/Relabeled_johnmarotta_april2026/"
+# root is a parent directory that containst the class directories (which contain images and labels)
+YOLO_ROOT = "/Volumes/OWC52/ready_to_integrate/test/"
 WALK_FOLDERS = True
 SUBFOLDER_PATH = None
 
 # YOLO_ROOT = "/Users/michaelmandiberg/Documents/yolo/reprocess/relabel_these93"
 # YOLO_ROOT = "/Users/michaelmandiberg/Library/CloudStorage/Dropbox/YOLO_Training_Data/new_images/groceries_final_mixed"
 # Mapping from local class ID to class name
-# LOCAL_CLASS_NAMES = {
-#     0: "Bag",
-#     1: "Bitcoin",
-#     2: "Creditcard",
-#     3: "Dumbbell",
-#     4: "Gift",
-#     5: "Groceries",
-#     6: "Iris",
-#     7: "Lily",
-#     8: "Lisianthus",
-#     9: "Money",
-#     10: "Orchid",
-#     11: "Peony",
-#     12: "Piggybank",
-#     13: "Rose",
-#     14: "Sign",
-#     15: "Tulip",
-# }
+LOCAL_CLASS_NAMES = {
+    0: "baseball",
+    1: "basketball",
+    2: "beachball",
+    3: "boxinggloves",
+    4: "discoball",
+    5: "football",
+    6: "soccerball",
+    7: "sportsbra",
+    8: "tennisball",
+    9: "volleyball",
+    10: "weightball",
+    11: "yogaball",
+    12: "yogamat"
+}
 
 
 
@@ -53,55 +52,55 @@ SUBFOLDER_PATH = None
 #     10: "Tulip"
 # }
 
-LOCAL_CLASS_NAMES = {
-    0: "Avocado half",
-    1: "Bag",
-    2: "Bitcoin",
-    3: "Boxing gloves",
-    4: "Chestpiece",
-    5: "Cigarette",
-    6: "Clipboard",
-    7: "Creditcard",
-    8: "Cucumber",
-    9: "Daffodil",
-    10: "Daisy",
-    11: "Dumbbell",
-    12: "Eyeglasses",
-    13: "Eyepatch",
-    14: "Facial",
-    15: "Flag",
-    16: "Gift",
-    17: "Groceries",
-    18: "Gun",
-    19: "Headphones",
-    20: "Hydrangea",
-    21: "Iris",
-    22: "Kiwi",
-    23: "Lemon slice",
-    24: "Lily",
-    25: "Lisianthus",
-    26: "Mask",
-    27: "Masquerade mask",
-    28: "Money",
-    29: "Orchid",
-    30: "Peony",
-    31: "Picture frame",
-    32: "Piggybank",
-    33: "Pistol",
-    34: "Playing cards",
-    35: "Rifle",
-    36: "Rose",
-    37: "Salad",
-    38: "Sheetmask",
-    39: "Sign",
-    40: "Sleepmask",
-    41: "Stethoscope",
-    42: "Sunflower",
-    43: "Tablet",
-    44: "Tulip",
-    45: "Valentine",
-    46: "Vape"
-}
+# LOCAL_CLASS_NAMES = {
+#     0: "Avocado half",
+#     1: "Bag",
+#     2: "Bitcoin",
+#     3: "Boxing gloves",
+#     4: "Chestpiece",
+#     5: "Cigarette",
+#     6: "Clipboard",
+#     7: "Creditcard",
+#     8: "Cucumber",
+#     9: "Daffodil",
+#     10: "Daisy",
+#     11: "Dumbbell",
+#     12: "Eyeglasses",
+#     13: "Eyepatch",
+#     14: "Facial",
+#     15: "Flag",
+#     16: "Gift",
+#     17: "Groceries",
+#     18: "Gun",
+#     19: "Headphones",
+#     20: "Hydrangea",
+#     21: "Iris",
+#     22: "Kiwi",
+#     23: "Lemon slice",
+#     24: "Lily",
+#     25: "Lisianthus",
+#     26: "Mask",
+#     27: "Masquerade mask",
+#     28: "Money",
+#     29: "Orchid",
+#     30: "Peony",
+#     31: "Picture frame",
+#     32: "Piggybank",
+#     33: "Pistol",
+#     34: "Playing cards",
+#     35: "Rifle",
+#     36: "Rose",
+#     37: "Salad",
+#     38: "Sheetmask",
+#     39: "Sign",
+#     40: "Sleepmask",
+#     41: "Stethoscope",
+#     42: "Sunflower",
+#     43: "Tablet",
+#     44: "Tulip",
+#     45: "Valentine",
+#     46: "Vape"
+# }
 
 
 

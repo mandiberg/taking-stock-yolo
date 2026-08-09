@@ -5,8 +5,8 @@ from pathlib import Path
 
 # ---- paths ----
 # DATASET_ROOT = "/Volumes/OWC52/segment_images_OWC4/test_output/sort/move_these"
-DATASET_ROOT = "/Users/michaelmandiberg/Downloads/project-6-at-2026-05-29-15-32-7de9086b"
-# DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images_reprocess_test/none_bag_groceries_flowers_money/test_output/review_refined_detections"
+# DATASET_ROOT = "/Users/michaelmandiberg/Downloads/project-6-at-2026-05-29-15-32-7de9086b"
+DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/deprecated/balls_round3_ready_to_integrate_jul31_delete/move_these142"
 
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
@@ -14,6 +14,8 @@ CLASSES_FILE = os.path.join(DATASET_ROOT, "classes.txt")
 OUTPUT_DIR = os.path.join(DATASET_ROOT, "images_detections")
 classes_dict = {}
 SAVE_TO_CLASS_FOLDERS = True  # Set to True to save images in class-named subfolders
+BOX_COLOR = (0, 255, 0)  # Green color for bounding boxes
+BOX_COLOR = (0, 0, 255)  # Blue color for bounding boxes
 
 # Alternative: Single folder with both images and JSON labels
 SINGLE_FOLDER_MODE = False  # Set to True for single folder with JSON labels
@@ -131,7 +133,7 @@ def process_yolo_format():
                 label = classes[class_id] if class_id < len(classes) else str(class_id)
 
                 # draw box
-                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
+                cv2.rectangle(image, (x1, y1), (x2, y2), (BOX_COLOR), 1)
                 cv2.putText(
                     image,
                     label,

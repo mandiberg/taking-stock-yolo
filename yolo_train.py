@@ -76,10 +76,10 @@ model.add_callback("on_train_start", freeze_layer)
 # Train
 results = model.train(
     data="/Users/michaelmandiberg/Documents/GitHub/taking-stock-yolo/yolo_dataset/data.yaml",  # absolute path
-    epochs=100,
+    epochs=1,
     imgsz=640,
     batch=-1,       # Reduce if you get memory errors
-    name='takingstock_balls_v1_yolo26x',  # Experiment name
+    name='takingstock_weights_v1_yolo26x',  # Experiment name
     patience=20,    # Early stopping
     device='mps',       # mps for Mac with M1/M2/M3 chips, else 'cuda' or 'cpu'
     workers=8,        # Lower host RAM pressure while debugging MPS crashes
