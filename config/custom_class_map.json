@@ -74,11 +74,13 @@
     {"id": 148, "name": "Discoball"},
     {"id": 149, "name": "Beachball"},
     {"id": 150, "name": "Yogaball"},
-    {"id": 151, "name": "Yogamat"},
-    {"id": 152, "name": "Golfball"},
-    {"id": 153, "name": "Tabletennisball"},
+    {"id": 151, "name": "Yogamat"}
+    {"id": 152, "name": "Golfball"}
+    {"id": 153, "name": "Tabletennisball"}
     {"id": 154, "name": "Globe"}
-    
+    {"id": 155, "name": "Dumbell"}
+    {"id": 156, "name": "Barbell"}
+    {"id": 157, "name": "Kettlebell"}
   ]
 }
 

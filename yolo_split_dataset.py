@@ -20,15 +20,16 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         int(source_class_id): int(yolo_id)
         for source_class_id, yolo_id in class_id_to_YOLOid.items()
     }
-    
+    print(f"Normalized class_id_to_YOLOid mapping: {normalized_class_id_to_YOLOid}")
     def convert_label_file(input_path, output_path, class_id_to_YOLOid):
-        # print(f"mapping is {class_id_to_YOLOid}")
+        print(f"mapping is {class_id_to_YOLOid}")
         """Read label file, convert class IDs to YOLO IDs, and write to output"""
         with open(input_path, 'r') as f:
             lines = f.readlines()
         
         converted_lines = []
         for line_number, line in enumerate(lines, start=1):
+            # print(f"Processing line {line_number} in {input_path}: {line.strip()}")
             parts = line.strip().split()
             if len(parts) >= 5:
                 try:
@@ -72,6 +73,7 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
                     converted_lines.append(' '.join(parts) + '\n')
                 except Exception as e:
                     print(f"Error converting line '{line.strip()}' in {input_path}: {e}")
+        # print(f"Converted {len(converted_lines)} lines for {input_path}")
         if not converted_lines:
             print(f" ❌❌❌ Skipping empty label (no valid annotations after conversion): {input_path}")
             return
@@ -107,6 +109,9 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         if label.exists():
             output_label = Path(output_dir) / 'labels' / 'train' / label.name
             convert_label_file(label, output_label, normalized_class_id_to_YOLOid)
+        else:
+            print(f" ❌❌❌ Missing label file for image: {img}, expected at: {label}")
+            removed_class_counts['missing_label'] += 1
     
     # Copy val files
     for img in val_images:
@@ -115,6 +120,9 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
         if label.exists():
             output_label = Path(output_dir) / 'labels' / 'val' / label.name
             convert_label_file(label, output_label, normalized_class_id_to_YOLOid)
+        else:
+            print(f" ❌❌❌ Missing label file for image: {img}, expected at: {label}")
+            removed_class_counts['missing_label'] += 1
 
     return removed_class_counts
 
@@ -177,7 +185,10 @@ for folder in folders:
     if len(files) == 0:
         print(f"No images found in {this_folder_images}, skipping.")
         continue
+
+    # this is for handling some kind of legacy edge case
     if not class_name[0].isdigit():
+        print(f"Class name '{class_name}' does not start with a digit, it is type of {type(class_name)}, doing some other path to splitting.")
     #     # Store class information
     #     class_names[class_id] = class_name
     #     class_id += 1
