@@ -22,7 +22,7 @@ def split_dataset(source_images, source_labels, output_dir, class_id_to_YOLOid=N
     }
     print(f"Normalized class_id_to_YOLOid mapping: {normalized_class_id_to_YOLOid}")
     def convert_label_file(input_path, output_path, class_id_to_YOLOid):
-        print(f"mapping is {class_id_to_YOLOid}")
+        # print(f"mapping is {class_id_to_YOLOid}")
         """Read label file, convert class IDs to YOLO IDs, and write to output"""
         with open(input_path, 'r') as f:
             lines = f.readlines()
@@ -241,9 +241,20 @@ for class_name, yolo_id in class_name_to_YOLOid.items():
         removed_class_counts=removed_class_counts
     )
 
+def sort_class_key(class_key):
+    """Return a stable sort key for mixed numeric/string/None class identifiers."""
+    if class_key is None:
+        return (2, "None")
+    if isinstance(class_key, (int, float)) and not isinstance(class_key, bool):
+        return (0, int(class_key))
+    return (1, str(class_key))
+
+
 total_removed_labels = sum(removed_class_counts.values())
 print(f"\nTotal unmapped labels removed: {total_removed_labels}")
 if total_removed_labels:
     print("Removed label counts by class_id:")
-    for class_id in sorted(removed_class_counts, key=lambda class_key: int(class_key) if str(class_key).isdigit() else str(class_key)):
+    for class_id in sorted(removed_class_counts, key=sort_class_key):
         print(f"  {class_id}: {removed_class_counts[class_id]}")
+
+print(removed_class_counts, "unmapped labels were removed during dataset splitting.")

@@ -14,7 +14,7 @@ from pathlib import Path
 import re
 
 
-FOLDER = "/Users/michaelmandiberg/Documents/yolo/Aug_7_189"
+FOLDER = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images/misc_weights"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 USE_FILENAMES_AS_IDS = True # permissive mode, for use with new undetected images
 

@@ -189,18 +189,18 @@ if __name__ == "__main__":
     # Replace these with your actual folder paths
     '''
     140_Boxing_gloves
-141_soccerball
-142_basketball
-143_football
-144_volleyball
-145_baseball
-146_tennisball
-147_weightball
-148_discoball
-149_beachball
-150_yogaball
-151_yogamat
-'''
+    141_soccerball
+    142_basketball
+    143_football
+    144_volleyball
+    145_baseball
+    146_tennisball
+    147_weightball
+    148_discoball
+    149_beachball
+    150_yogaball
+    151_yogamat
+    '''
     INPUT_DATASET_FOLDER = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images_orig/151_yogamat" 
     OUTPUT_CLEAN_FOLDER = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images/151_yogamat"
     

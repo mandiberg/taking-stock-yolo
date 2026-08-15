@@ -6,7 +6,7 @@ from pathlib import Path
 # ---- paths ----
 # DATASET_ROOT = "/Volumes/OWC52/segment_images_OWC4/test_output/sort/move_these"
 # DATASET_ROOT = "/Users/michaelmandiberg/Downloads/project-6-at-2026-05-29-15-32-7de9086b"
-DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/deprecated/balls_round3_ready_to_integrate_jul31_delete/move_these142"
+DATASET_ROOT = "/Users/michaelmandiberg/Documents/YOLO_Training_Data/sorted_images/155_dumbbell_found_dataset"
 
 IMAGES_DIR = os.path.join(DATASET_ROOT, "images")
 LABELS_DIR = os.path.join(DATASET_ROOT, "labels")
